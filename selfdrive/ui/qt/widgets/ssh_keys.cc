@@ -65,7 +65,7 @@ void SshControl::getUserKeys(const QString &username) {
   request->sendRequest("https://github.com/" + username + ".keys");
 }
 //LateralControlSelect
-LateralControlSelect::LateralControlSelect() : AbstractControl("LateralControl [¡î]", "Á¶Çâ·ÎÁ÷À» ¼±ÅÃÇÕ´Ï´Ù. (PID/INDI/LQR)", "../assets/offroad/icon_logic.png") {
+LateralControlSelect::LateralControlSelect() : AbstractControl("LateralControl [âˆš]", "ì¡°í–¥ë¡œì§ ì„ íƒí•©ë‹ˆë‹¤. (PID/INDI/LQR)", "../assets/offroad/icon_logic.png") {
  
   label.setAlignment(Qt::AlignVCenter|Qt::AlignRight);
   label.setStyleSheet("color: #e0e879");
@@ -128,6 +128,6 @@ void LateralControlSelect::refresh() {
   } else if (latcontrol == "2") {
     label.setText(QString::fromStdString("LQR"));
   }
-  btnminus.setText("¢¸");
-  btnplus.setText("¢º");
+  btnminus.setText("â—€");
+  btnplus.setText("â–¶");
 }
