@@ -355,6 +355,13 @@ QWidget * network_panel(QWidget * parent) {
 #endif
   return w;
 }
+//VIP menu
+VIPPanel::VIPPanel(QWidget* parent) : QWidget(parent) {
+  QVBoxLayout *layout = new QVBoxLayout(this);
+  layout->addWidget(new LabelControl("제어메뉴", ""));
+  layout->addWidget(new LateralControlSelect());
+  layout->addWidget(horizontal_line());
+}
 
 static QStringList get_list(const char* path)
 {
@@ -420,11 +427,12 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
   QObject::connect(device, &DevicePanel::closeSettings, this, &SettingsWindow::closeSettings);
 
   QList<QPair<QString, QWidget *>> panels = {
-    {"Device", device},
-    {"Network", network_panel(this)},
-    {"Toggles", new TogglesPanel(this)},
-    {"Software", new SoftwarePanel(this)},
-    {"Community", new CommunityPanel(this)},
+    {"장치", device},
+    {"VIP메뉴", new VIPPanel(this)},
+    {"네트워크", network_panel(this)},
+    {"토글메뉴", new TogglesPanel(this)},
+    {"소프트웨어", new SoftwarePanel(this)},
+    {"커뮤니티", new CommunityPanel(this)},
   };
 
 #ifdef ENABLE_MAPS

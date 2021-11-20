@@ -99,3 +99,10 @@ public:
   explicit CommunityPanel(QWidget *parent = nullptr);
 };
 
+class VIPPanel : public QWidget {
+  Q_OBJECT
+public:
+  explicit VIPPanel(QWidget *parent = nullptr);
+};
+
+
