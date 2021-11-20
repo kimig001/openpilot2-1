@@ -43,26 +43,74 @@ class CarInterface(CarInterfaceBase):
 
     ret.communityFeature = True
 
-    tire_stiffness_factor = 1.
+    tire_stiffness_factor = 0.85
     ret.maxSteeringAngleDeg = 1000.
 
-    # lateral
-    ret.lateralTuning.init('lqr')
+    
+    # -------------PID
+    if Params().get("LateralControlSelect", encoding='utf8') == "0":
+      if candidate in [CAR.GENESIS, CAR.GENESIS_G80, CAR.GENESIS_EQ900]:
+          ret.lateralTuning.pid.kf = 0.000038
+          #ret.lateralTuning.pid.kf = 0.0000385
+          ret.lateralTuning.pid.kpBP = [0., 10., 30.]
+          ret.lateralTuning.pid.kpV = [0.01, 0.04, 0.07]
+          #ret.lateralTuning.pid.kpV = [0.01, 0.05, 0.08]
+          ret.lateralTuning.pid.kiBP = [0., 30.]
+          ret.lateralTuning.pid.kiV = [0.02, 0.02]
+          ret.lateralTuning.pid.kdBP = [0.]
+          ret.lateralTuning.pid.kdV = [1.]
+          ret.lateralTuning.pid.newKfTuned = True
+          
+          #ret.lateralTuning.pid.kf = 0.00003
+          #ret.lateralTuning.pid.kpBP = [0., 10., 30.]
+          #ret.lateralTuning.pid.kpV = [0.05, 0.064, 0.065]
+          #ret.lateralTuning.pid.kiBP = [0., 30.]
+          #ret.lateralTuning.pid.kiV = [0.02, 0.02]
+          #ret.lateralTuning.pid.kdBP = [0.]
+          #ret.lateralTuning.pid.kdV = [1.]
+          #ret.lateralTuning.pid.newKfTuned = True
+          
+          ret.steerActuatorDelay = 0.08
+          ret.steerRateCost = 0.5
+          ret.steerLimitTimer = 2.5
+          ret.steerRatio = 16.5
+    
+    # ---------------INDI
+    elif Params().get("LateralControlSelect", encoding='utf8') == "1":
+      if candidate in [CAR.GENESIS, CAR.GENESIS_EQ900]:
+          ret.lateralTuning.init('indi')
+          ret.lateralTuning.indi.innerLoopGainBP = [0.]
+          ret.lateralTuning.indi.innerLoopGainV = [3.5]
+          ret.lateralTuning.indi.outerLoopGainBP = [0.]
+          ret.lateralTuning.indi.outerLoopGainV = [2.0]
+          ret.lateralTuning.indi.timeConstantBP = [0.]
+          ret.lateralTuning.indi.timeConstantV = [1.4]
+          ret.lateralTuning.indi.actuatorEffectivenessBP = [0.]
+          ret.lateralTuning.indi.actuatorEffectivenessV = [1.3]
+          
+          ret.steerActuatorDelay = 0.3
+          ret.steerRateCost = 0.5
+          ret.steerLimitTimer = 2.0
+          ret.steerRatio = 15.0
+  
+    # ---------------LQR
+    elif Params().get("LateralControlSelect", encoding='utf8') == "2":
+      if candidate in [CAR.GENESIS, CAR.GENESIS_G80, CAR.GENESIS_EQ900]:
+          ret.lateralTuning.init('lqr')
+          ret.lateralTuning.lqr.scale = 1500.
+          ret.lateralTuning.lqr.ki = 0.02
+          ret.lateralTuning.lqr.dcGain = 0.0027
+          ret.lateralTuning.lqr.a = [0., 1., -0.22619643, 1.21822268]
+          ret.lateralTuning.lqr.b = [-1.92006585e-04, 3.95603032e-05]
+          ret.lateralTuning.lqr.c = [1., 0.]
+          ret.lateralTuning.lqr.k = [-110, 451]
+          ret.lateralTuning.lqr.l = [0.33, 0.318]
 
-    ret.lateralTuning.lqr.scale = 1700.
-    ret.lateralTuning.lqr.ki = 0.01
-    ret.lateralTuning.lqr.dcGain = 0.0028
+          ret.steerRatio = 16.5
+          ret.steerActuatorDelay = 0.1
+          ret.steerLimitTimer = 2.5
+          ret.steerRateCost = 0.5
 
-    ret.lateralTuning.lqr.a = [0., 1., -0.22619643, 1.21822268]
-    ret.lateralTuning.lqr.b = [-1.92006585e-04, 3.95603032e-05]
-    ret.lateralTuning.lqr.c = [1., 0.]
-    ret.lateralTuning.lqr.k = [-110., 451.]
-    ret.lateralTuning.lqr.l = [0.33, 0.318]
-
-    ret.steerRatio = 16.5
-    ret.steerActuatorDelay = 0.1
-    ret.steerLimitTimer = 2.5
-    ret.steerRateCost = 0.4
     ret.steerMaxBP = [0.]
     ret.steerMaxV = [1.5]
 
@@ -73,6 +121,8 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalTuning.kiV = [0.06, 0.03]
     ret.longitudinalTuning.deadzoneBP = [0., 30.*CV.KPH_TO_MS]
     ret.longitudinalTuning.deadzoneV = [0., 0.15]
+    ret.longitudinalTuning.kdBP = [0., 10.*CV.KPH_TO_MS, 20.*CV.KPH_TO_MS, 40.*CV.KPH_TO_MS, 70.*CV.KPH_TO_MS, 100.*CV.KPH_TO_MS, 130.*CV.KPH_TO_MS]
+    ret.longitudinalTuning.kdV = [0.6, 0.55, 0.4, 0.3, 0.2, 0.1, 0.05]
     ret.longitudinalActuatorDelayLowerBound = 0.15
     ret.longitudinalActuatorDelayUpperBound = 0.3
 

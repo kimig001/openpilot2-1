@@ -12,12 +12,12 @@ from selfdrive.config import Conversions as CV
 import cereal.messaging as messaging
 from cereal import log
 
-AUTO_LCA_START_TIME = 1.0
+AUTO_LCA_START_TIME = 0.0
 
 LaneChangeState = log.LateralPlan.LaneChangeState
 LaneChangeDirection = log.LateralPlan.LaneChangeDirection
 
-LANE_CHANGE_SPEED_MIN = 30 * CV.MPH_TO_MS
+LANE_CHANGE_SPEED_MIN = 56 * CV.KPH_TO_MS
 LANE_CHANGE_TIME_MAX = 10.
 
 DESIRES = {
@@ -83,6 +83,15 @@ class LateralPlanner():
     self.safe_desired_curvature_rate = 0.0
 
   def update(self, sm, CP):
+    try:
+      if CP.lateralTuning.which() == 'pid':
+        self.output_scale = sm['controlsState'].lateralControlState.pidState.output
+      elif CP.lateralTuning.which() == 'indi':
+        self.output_scale = sm['controlsState'].lateralControlState.indiState.output
+      elif CP.lateralTuning.which() == 'lqr':
+        self.output_scale = sm['controlsState'].lateralControlState.lqrState.output
+    except:
+      pass
     v_ego = sm['carState'].vEgo
     active = sm['controlsState'].active
     measured_curvature = sm['controlsState'].curvature
