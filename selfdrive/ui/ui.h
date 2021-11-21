@@ -83,6 +83,8 @@
 const int bdr_s = 20;
 const int header_h = 420;
 const int footer_h = 280;
+const int laneless_btn = {1585, 905, 140, 140};
+
 const int UI_FREQ = 20;   // Hz
 typedef cereal::CarControl::HUDControl::AudibleAlert AudibleAlert;
 
@@ -194,6 +196,11 @@ typedef struct UIScene {
   float angleSteers;
   float angleSteersDes;
   cereal::PandaState::PandaType pandaType;
+  
+  int laneless_mode;
+
+  cereal::CarState::Reader car_state;
+  cereal::LateralPlan::Reader lateral_plan;
 
   // modelV2
   float lane_line_probs[4];
@@ -211,6 +218,17 @@ typedef struct UIScene {
   float light_sensor, accel_sensor, gyro_sensor;
   bool started, ignition, is_metric, longitudinal_control, end_to_end;
   uint64_t started_frame;
+  
+  struct _LateralPlan
+  {
+    float laneWidth;
+
+    float dProb;
+    float lProb;
+    float rProb;
+
+    bool lanelessModeStatus;
+  } lateralPlan;
 
   // neokii dev UI
   cereal::CarControl::Reader car_control;

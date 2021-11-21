@@ -1,6 +1,7 @@
 #include "selfdrive/ui/ui.h"
 
 #include <unistd.h>
+#include <string>
 
 #include <cassert>
 #include <cmath>
@@ -80,6 +81,7 @@ static void update_line_data(const UIState *s, const cereal::ModelDataV2::XYZTDa
 }
 
 static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
+  SubMaster &sm = *(s->sm);
   UIScene &scene = s->scene;
   auto model_position = model.getPosition();
   float max_distance = std::clamp(model_position.getX()[TRAJECTORY_SIZE - 1],
@@ -101,6 +103,8 @@ static void update_model(UIState *s, const cereal::ModelDataV2::Reader &model) {
     scene.road_edge_stds[i] = road_edge_stds[i];
     update_line_data(s, road_edges[i], 0.025, 0, &scene.road_edge_vertices[i], max_idx);
   }
+	
+  scene.lateral_plan = sm["lateralPlan"].getLateralPlan();
 
   // update path
   auto lead_one = (*s->sm)["radarState"].getRadarState().getLeadOne();
@@ -216,6 +220,16 @@ static void update_state(UIState *s) {
     scene.light_sensor = std::clamp<float>(1.0 - (ev / max_ev), 0.0, 1.0);
   }
   scene.started = sm["deviceState"].getDeviceState().getStarted() && scene.ignition;
+  if (sm.updated("lateralPlan")) {
+    scene.lateral_plan = sm["lateralPlan"].getLateralPlan();
+    auto data = sm["lateralPlan"].getLateralPlan();
+
+    scene.lateralPlan.laneWidth = data.getLaneWidth();
+    scene.lateralPlan.dProb = data.getDProb();
+    scene.lateralPlan.lProb = data.getLProb();
+    scene.lateralPlan.rProb = data.getRProb();
+    scene.lateralPlan.lanelessModeStatus = data.getLanelessMode();
+  }
   if (Params().getBool("IsOpenpilotViewEnabled")) {
     scene.started = sm["deviceState"].getDeviceState().getStarted();
   } else {
@@ -229,6 +243,7 @@ void ui_update_params(UIState *s) {
   s->scene.is_metric = Params().getBool("IsMetric");
   s->show_debug_ui = params.getBool("ShowDebugUI");
   s->show_basicinfo_ui = params.getBool("ShowBasicinfoUI");  
+    s->show_cgear_ui = params.getBool("ShowCgearUI");  
   s->custom_lead_mark = params.getBool("CustomLeadMark");
 }
 
@@ -252,6 +267,7 @@ static void update_status(UIState *s) {
       s->status = STATUS_DISENGAGED;
       s->scene.started_frame = s->sm->frame;
       s->scene.end_to_end = Params().getBool("EndToEndToggle");
+      s->scene.laneless_mode = std::stoi(Params().get("LanelessMode"));    
       s->wide_camera = Hardware::TICI() ? Params().getBool("EnableWideCamera") : false;
     }
     // Invisible until we receive a calibration message.
@@ -320,7 +336,7 @@ QUIState::QUIState(QObject *parent) : QObject(parent) {
   ui_state.sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState", "roadCameraState",
     "pandaStates", "carParams", "driverMonitoringState", "sensorEvents", "carState", "liveLocationKalman",
-    "gpsLocationExternal", "carControl", "liveParameters", "ubloxGnss"});
+    "gpsLocationExternal", "carControl", "liveParameters", "ubloxGnss", "lateralPlan",});
 
   Params params;
   ui_state.wide_camera = Hardware::TICI() ? params.getBool("EnableWideCamera") : false;

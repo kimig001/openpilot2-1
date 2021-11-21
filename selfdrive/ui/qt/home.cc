@@ -71,6 +71,21 @@ void HomeWindow::mouseReleaseEvent(QMouseEvent* e) {
 #else
 void HomeWindow::mousePressEvent(QMouseEvent* e) {
 #endif
+  // Laneless mode
+  if (QUIState::ui_state.scene.started && !sidebar->isVisible() && QUIState::ui_state.scene.end_to_end && laneless_btn.ptInRect(e->x(), e->y())) {
+    QUIState::ui_state.scene.laneless_mode = QUIState::ui_state.scene.laneless_mode + 1;
+    if (QUIState::ui_state.scene.laneless_mode > 2) {
+      QUIState::ui_state.scene.laneless_mode = 0;
+    }
+    if (QUIState::ui_state.scene.laneless_mode == 0) {
+      Params().put("LanelessMode", "0", 1);
+    } else if (QUIState::ui_state.scene.laneless_mode == 1) {
+      Params().put("LanelessMode", "1", 1);
+    } else if (QUIState::ui_state.scene.laneless_mode == 2) {
+      Params().put("LanelessMode", "2", 1);
+    }
+    return;
+  }
   // Handle sidebar collapsing
   if (onroad->isVisible() && (!sidebar->isVisible() || e->x() > sidebar->width())) {
     sidebar->setVisible(!sidebar->isVisible() && !onroad->isMapVisible());

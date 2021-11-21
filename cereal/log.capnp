@@ -897,6 +897,8 @@ struct LateralPlan @0xe1e9318e2ae8b51e {
   curvatures @27 :List(Float32);
   curvatureRates @28 :List(Float32);
   
+  lanelessMode @32 :Bool;
+  
   autoLaneChangeEnabled @30 :Bool;
   autoLaneChangeTimer @31 :Int8;
 
