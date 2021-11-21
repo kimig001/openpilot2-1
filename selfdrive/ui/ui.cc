@@ -230,21 +230,24 @@ static void update_state(UIState *s) {
     scene.lateralPlan.rProb = data.getRProb();
     scene.lateralPlan.lanelessModeStatus = data.getLanelessMode();
   }
-  //if (Params().getBool("IsOpenpilotViewEnabled")) {
-  //  scene.started = sm["deviceState"].getDeviceState().getStarted();
-  //} else {
-  //  scene.started = sm["deviceState"].getDeviceState().getStarted() && scene.ignition;
-  //}
+  if (!scene.is_OpenpilotViewEnabled) {
+    scene.started = sm["deviceState"].getDeviceState().getStarted();
+  } else {
+    scene.started = sm["deviceState"].getDeviceState().getStarted() && scene.ignition;
+  }
 }
 
 void ui_update_params(UIState *s) {
+  const uint64_t frame = s->sm->frame;
+  UIScene &scene = s->scene;
   Params params;
-  //s->scene.is_OpenpilotViewEnabled = params.getBool("IsOpenpilotViewEnabled"); 
-  s->scene.is_metric = Params().getBool("IsMetric");
-  s->show_debug_ui = params.getBool("ShowDebugUI");
-  s->show_basicinfo_ui = params.getBool("ShowBasicinfoUI");  
-  s->show_cgear_ui = params.getBool("ShowCgearUI");  
-  s->custom_lead_mark = params.getBool("CustomLeadMark");
+  if (frame % (5*UI_FREQ) == 0) {
+    scene.is_OpenpilotViewEnabled = params.getBool("IsOpenpilotViewEnabled"); 
+    scene.is_metric = params.getBool("IsMetric");
+    scene.is_show_debug_ui = params.getBool("ShowDebugUI");
+    scene.is_show_basicinfo_ui = params.getBool("ShowBasicinfoUI");  
+    scene.is_cgear_ui = params.getBool("ShowCgearUI");  
+    scene.is_custom_lead_mark = params.getBool("CustomLeadMark");
 }
 
 static void update_status(UIState *s) {
