@@ -221,7 +221,7 @@ typedef struct UIScene {
   int satelliteCount;
   float gpsAccuracy;
   cereal::ControlsState::Reader controls_state;
-  int satelliteCount;
+  //int satelliteCount;
 
 } UIScene;
 
