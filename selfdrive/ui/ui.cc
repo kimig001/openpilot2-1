@@ -265,6 +265,31 @@ static void update_extras(UIState *s)
    UIScene &scene = s->scene;
    SubMaster &sm = *(s->sm);
 
+   if (sm.updated("carState"))
+   {
+    auto data = sm["carState"].getCarState();
+    auto car_state = (*s->sm)["carState"].getCarState();
+    scene.brakePress = data.getBrakePressed();
+    scene.brakeLights = data.getBrakeLights();
+   //
+    if(scene.leftBlinker!=data.getLeftBlinker() || scene.rightBlinker!=data.getRightBlinker())
+    scene.blinker_blinkingrate = 120;
+    scene.leftBlinker = data.getLeftBlinker();
+    scene.rightBlinker = data.getRightBlinker();
+    scene.currentGear = data.getCurrentGear();
+    scene.getGearShifter = data.getGearShifter(); 
+    //
+    //bsd
+    scene.leftblindspot = data.getLeftBlindspot();
+    scene.rightblindspot = data.getRightBlindspot();  
+    //bsd
+    //tpms
+    scene.tpmsFl = data.getTpmsFl();
+    scene.tpmsFr = data.getTpmsFr();
+    scene.tpmsRl = data.getTpmsRl();
+    scene.tpmsRr = data.getTpmsRr();
+   }
+	
    if(sm.updated("carControl"))
     scene.car_control = sm["carControl"].getCarControl();
 

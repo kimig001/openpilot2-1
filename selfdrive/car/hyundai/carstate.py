@@ -147,6 +147,32 @@ class CarState(CarStateBase):
       ret.gas = cp.vl["EMS12"]["PV_AV_CAN"] / 100.
       ret.gasPressed = bool(cp.vl["EMS16"]["CF_Ems_AclAct"])
 
+    if not self.car_fingerprint in FEATURES["use_elect_gears"]:
+    #if self.car_fingerprint in [CAR.GENESIS, CAR.GENESIS_EQ900, CAR.GENESIS_EQ900_L, CAR.K7]: 
+      ret.currentGear = cp.vl["LVR11"]["CF_Lvr_CGear"]
+
+    gear_disp2 = cp.vl["LVR11"] #["CF_Lvr_CGear"] 
+    print(gear_disp2)
+ 
+	  
+      
+    #TPMS
+    if cp.vl["TPMS11"]["UNIT"] == 0.0:
+      ret.tpmsFl = cp.vl["TPMS11"]["PRESSURE_FL"]
+      ret.tpmsFr = cp.vl["TPMS11"]["PRESSURE_FR"]
+      ret.tpmsRl = cp.vl["TPMS11"]["PRESSURE_RL"]
+      ret.tpmsRr = cp.vl["TPMS11"]["PRESSURE_RR"]
+    elif cp.vl["TPMS11"]["UNIT"] == 1.0:
+      ret.tpmsFl = cp.vl["TPMS11"]["PRESSURE_FL"] * 5 * 0.145038
+      ret.tpmsFr = cp.vl["TPMS11"]["PRESSURE_FR"] * 5 * 0.145038
+      ret.tpmsRl = cp.vl["TPMS11"]["PRESSURE_RL"] * 5 * 0.145038
+      ret.tpmsRr = cp.vl["TPMS11"]["PRESSURE_RR"] * 5 * 0.145038
+    elif cp.vl["TPMS11"]["UNIT"] == 2.0:
+      ret.tpmsFl = cp.vl["TPMS11"]["PRESSURE_FL"] / 10 * 14.5038
+      ret.tpmsFr = cp.vl["TPMS11"]["PRESSURE_FR"] / 10 * 14.5038
+      ret.tpmsRl = cp.vl["TPMS11"]["PRESSURE_RL"] / 10 * 14.5038
+      ret.tpmsRr = cp.vl["TPMS11"]["PRESSURE_RR"] / 10 * 14.5038
+
     # TODO: refactor gear parsing in function
     # Gear Selection via Cluster - For those Kia/Hyundai which are not fully discovered, we can use the Cluster Indicator for Gear Selection,
     # as this seems to be standard over all cars, but is not the preferred method.
@@ -211,12 +237,6 @@ class CarState(CarStateBase):
     #종료
     ret.cruiseGap = self.cruise_gap
 
-    tpms_unit = cp.vl["TPMS11"]["UNIT"] * 0.725 if int(cp.vl["TPMS11"]["UNIT"]) > 0 else 1.
-    ret.tpms.fl = tpms_unit * cp.vl["TPMS11"]["PRESSURE_FL"]
-    ret.tpms.fr = tpms_unit * cp.vl["TPMS11"]["PRESSURE_FR"]
-    ret.tpms.rl = tpms_unit * cp.vl["TPMS11"]["PRESSURE_RL"]
-    ret.tpms.rr = tpms_unit * cp.vl["TPMS11"]["PRESSURE_RR"]
-
     return ret
 
   @staticmethod
@@ -240,6 +260,8 @@ class CarState(CarStateBase):
       ("CF_Gway_RRDrSw", "CGW2", 0),        # Rear right door
       ("CF_Gway_TurnSigLh", "CGW1", 0),
       ("CF_Gway_TurnSigRh", "CGW1", 0),
+      ("CF_Gway_TSigLHSw", "CGW1", 0),      # blinker
+      ("CF_Gway_TSigRHSw", "CGW1", 0),      # blinker
       ("CF_Gway_ParkBrakeSw", "CGW1", 0),   # Parking Brake
 
       ("CYL_PRES", "ESP12", 0),
@@ -264,9 +286,19 @@ class CarState(CarStateBase):
       ("CF_VSM_Avail", "TCS13", 0),
 
       ("ESC_Off_Step", "TCS15", 0),
-      ("AVH_LAMP", "TCS15", 0),
+	  ("AVH_LAMP", "TCS15", 0),
+      ("Lvr12_00", "LVR12", 0),     
+      ("Lvr12_01", "LVR12", 0),     
+      ("Lvr12_02", "LVR12", 0),     
+      ("Lvr12_03", "LVR12", 0),     
+      ("Lvr12_04", "LVR12", 0),     
+      ("Lvr12_05", "LVR12", 0),     
+      ("Lvr12_06", "LVR12", 0),     
+      ("Lvr12_07", "LVR12", 0),     
 
-      #("CF_Lvr_GearInf", "LVR11", 0),        # Transmission Gear (0 = N or P, 1-8 = Fwd, 14 = Rev)
+      ("CF_Lvr_CGear", "LVR11", 0), 
+      ("CF_Lvr_GearInf", "LVR11", 0),  
+
 
       ("MainMode_ACC", "SCC11", 1),
       ("SCCInfoDisplay", "SCC11", 0),

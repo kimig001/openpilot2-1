@@ -787,6 +787,29 @@ static void bb_ui_draw_debug(UIState *s) {
     ui_draw_text(s, text_x, y, str, 22 * 2.5, textColor, "sans-regular");
 }
 
+static void bb_ui_draw_cgear(UIState *s)  
+{  
+  const UIScene *scene = &s->scene; 
+
+  int x = (bdr_s * 2);
+  int y = s->fb_h;
+  int x_gear = x+210-210+30;
+  int y_gear = y-157+28;
+	
+  char strGear[32];
+  int  ngetGearShifter = int(s->scene.getGearShifter);
+  snprintf(strGear, sizeof(strGear), "%.0f", s->scene.currentGear);
+  if ((s->scene.currentGear < 9) && (s->scene.currentGear !=0)) { 
+    ui_draw_text(s, x_gear, y_gear, strGear, 25 * 8., COLOR_WHITE, "sans-semibold");
+  } else if (s->scene.currentGear == 14 ) { 
+    ui_draw_text(s, x_gear, y_gear, "R", 25 * 8., COLOR_RED, "sans-semibold");
+  } else if (ngetGearShifter == 1 ) { 
+    ui_draw_text(s, x_gear, y_gear, "P", 25 * 8., COLOR_WHITE, "sans-semibold");
+  } else if (ngetGearShifter == 3 ) {  
+    ui_draw_text(s, x_gear, y_gear, "N", 25 * 8., COLOR_WHITE, "sans-semibold");
+  }
+}
+
 static void bb_ui_draw_UI(UIState *s) {
   const int bb_dml_w = 180;
   const int bb_dml_x = bdr_is * 2;
@@ -809,8 +832,8 @@ static void bb_ui_draw_UI(UIState *s) {
 	
   if(s->show_basicinfo_ui) 
     bb_ui_draw_basic_info(s);
-  //if(s->show_cgear_ui) 
-  //  bb_ui_draw_cgear(s);
+  if(s->show_cgear_ui) 
+    bb_ui_draw_cgear(s);
   if(s->show_debug_ui)
     bb_ui_draw_debug(s);
 }
@@ -939,31 +962,171 @@ static void ui_draw_vision_maxspeed(UIState *s) {
 AText textSpeed("sans-bold");
 
 static void ui_draw_vision_speed(UIState *s) {
-  const float speed = std::max(0.0, (*s->sm)["carState"].getCarState().getCluSpeedMs() * (s->scene.is_metric ? MS_TO_KPH : MS_TO_MPH));
+  const float speed = std::max(0.0, (*s->sm)["carState"].getCarState().getVEgo() * (s->scene.is_metric ? MS_TO_KPH : MS_TO_MPH));
   const std::string speed_str = std::to_string((int)std::nearbyint(speed));
+  UIScene &scene = s->scene;  
+  const int viz_speed_w = 250;
+  const int viz_speed_x = s->fb_w/2 - viz_speed_w/2;
+  const int header_h2 = 400;
+	
+  // turning blinker from kegman, moving signal by OPKR
+  if (scene.leftBlinker) {
+    nvgBeginPath(s->vg);
+    nvgMoveTo(s->vg, viz_speed_x, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x - viz_speed_w/4, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x - viz_speed_w/2, header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x - viz_speed_w/4, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x - viz_speed_w/4, header_h2/2);
+    nvgClosePath(s->vg);
+    nvgFillColor(s->vg, nvgRGBA(255,230,70,(scene.blinker_blinkingrate<=120 && scene.blinker_blinkingrate>=50)?70:0));
+    nvgFill(s->vg);
+    nvgBeginPath(s->vg);
+    nvgMoveTo(s->vg, viz_speed_x - 125, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x - 125 - viz_speed_w/4, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x - 125 - viz_speed_w/2, header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x - 125 - viz_speed_w/4, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x - 125, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x - 125 - viz_speed_w/4, header_h2/2);
+    nvgClosePath(s->vg);
+    nvgFillColor(s->vg, nvgRGBA(255,230,70,(scene.blinker_blinkingrate<=100 && scene.blinker_blinkingrate>=50)?140:0));
+    nvgFill(s->vg);
+    nvgBeginPath(s->vg);
+    nvgMoveTo(s->vg, viz_speed_x - 250, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x - 250 - viz_speed_w/4, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x - 250 - viz_speed_w/2, header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x - 250 - viz_speed_w/4, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x - 250, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x - 250 - viz_speed_w/4, header_h2/2);
+    nvgClosePath(s->vg);
+    nvgFillColor(s->vg, nvgRGBA(255,230,70,(scene.blinker_blinkingrate<=80 && scene.blinker_blinkingrate>=50)?210:0));
+    nvgFill(s->vg);
+  }
+  if (scene.rightBlinker) {
+    nvgBeginPath(s->vg);
+    nvgMoveTo(s->vg, viz_speed_x + viz_speed_w, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + viz_speed_w/4, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + viz_speed_w/2, header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + viz_speed_w/4, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + viz_speed_w/4, header_h2/2);
+    nvgClosePath(s->vg);
+    nvgFillColor(s->vg, nvgRGBA(255,230,70,(scene.blinker_blinkingrate<=120 && scene.blinker_blinkingrate>=50)?70:0));
+    nvgFill(s->vg);
+    nvgBeginPath(s->vg);
+    nvgMoveTo(s->vg, viz_speed_x + viz_speed_w + 125, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + 125 + viz_speed_w/4, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + 125 + viz_speed_w/2, header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + 125 + viz_speed_w/4, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + 125, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + 125 + viz_speed_w/4, header_h2/2);
+    nvgClosePath(s->vg);
+    nvgFillColor(s->vg, nvgRGBA(255,230,70,(scene.blinker_blinkingrate<=100 && scene.blinker_blinkingrate>=50)?140:0));
+    nvgFill(s->vg);
+    nvgBeginPath(s->vg);
+    nvgMoveTo(s->vg, viz_speed_x + viz_speed_w + 250, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + 250 + viz_speed_w/4, header_h2/4);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + 250 + viz_speed_w/2, header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + 250 + viz_speed_w/4, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + 250, header_h2/4 + header_h2/2);
+    nvgLineTo(s->vg, viz_speed_x + viz_speed_w + 250 + viz_speed_w/4, header_h2/2);
+    nvgClosePath(s->vg);
+    nvgFillColor(s->vg, nvgRGBA(255,230,70,(scene.blinker_blinkingrate<=80 && scene.blinker_blinkingrate>=50)?210:0));
+    nvgFill(s->vg);
+    }
+  if (scene.leftBlinker || scene.rightBlinker) {
+    scene.blinker_blinkingrate -= 5;
+    if(scene.blinker_blinkingrate < 0) scene.blinker_blinkingrate = 120;
+  }
+
+  NVGcolor val_color = COLOR_SKYBLUE;
+  if( s->scene.brakePress ) val_color = COLOR_RED;
+  else if( s->scene.brakeLights ) val_color = nvgRGBA(201, 34, 49, 100);
+	
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
 
   if(s->fb_w > 1500) {
     //ui_draw_text(s, s->fb_w/2, 220, speed_str.c_str(), 96 * 2.5, COLOR_WHITE, "sans-bold");
-    textSpeed.update(s, s->fb_w/2, 220, speed_str.c_str(), 96 * 2.5, COLOR_WHITE);
-    ui_draw_text(s, s->fb_w/2, 300, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
+    textSpeed.update(s, s->fb_w/2, 210, speed_str.c_str(), 96 * 2.5, val_color);
+    //ui_draw_text(s, s->fb_w/2, 300, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
   }
   else {
     //ui_draw_text(s, s->fb_w/2, 180, speed_str.c_str(), 60 * 2.5, COLOR_WHITE, "sans-bold");
-    textSpeed.update(s, s->fb_w/2, 180, speed_str.c_str(), 60 * 2.5, COLOR_WHITE);
-    ui_draw_text(s, s->fb_w/2, 230, s->scene.is_metric ? "km/h" : "mph", 25 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
+    textSpeed.update(s, s->fb_w/2, 170, speed_str.c_str(), 60 * 2.5, val_color);
+    //ui_draw_text(s, s->fb_w/2, 230, s->scene.is_metric ? "km/h" : "mph", 25 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
+  }
+}
+  //ui_draw_text(s, s->fb_w/2, 210, speed_str.c_str(), 96 * 2.5, val_color, "sans-bold");
+  //ui_draw_text(s, s->fb_w/2, 290, s->scene.is_metric ? "PID" : "mph", 26 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
+//}
+
+static void ui_draw_vision_event(UIState *s) {
+  const UIScene *scene = &s->scene;
+  const int viz_event_w = 220;
+  const int viz_event_x = s->fb_w - (viz_event_w + bdr_s*2);
+  const int viz_event_y = (bdr_s*1.5);
+  const int viz_event_h = (header_h - (bdr_s*1.5));
+  
+  // draw steering wheel
+    float angleSteers = (*s->sm)["controlsState"].getControlsState().getAngleSteers();
+    int steerOverride = (*s->sm)["carState"].getCarState().getSteeringPressed();
+
+    const int bg_wheel_size = 90;
+    const int bg_wheel_x = viz_event_x + (viz_event_w - bg_wheel_size);
+    const int bg_wheel_y = viz_event_y + (bg_wheel_size/2) + 45;
+    const int img_wheel_size = bg_wheel_size*1.5;
+    const int img_wheel_x = bg_wheel_x - (img_wheel_size/2);
+    const int img_wheel_y = bg_wheel_y - 55;
+    const float img_rotation = angleSteers/180*3.141592;
+    float img_wheel_alpha = 0.5f;
+    bool is_engaged = (s->status == STATUS_ENGAGED) && ! steerOverride;
+    bool is_warning = (s->status == STATUS_WARNING);
+    bool is_engageable = (*s->sm)["controlsState"].getControlsState().getEngageable();
+
+    if (is_engaged || is_warning || is_engageable) {
+      nvgBeginPath(s->vg);
+      nvgCircle(s->vg, bg_wheel_x, (bg_wheel_y + (bdr_s*1.5)), bg_wheel_size);
+      if (is_engaged) {
+        nvgFillColor(s->vg, nvgRGBA(0x87, 0xce, 0xeb, 0x90));
+      } else if (is_warning) {
+        nvgFillColor(s->vg, nvgRGBA(0x80, 0x80, 0x80, 0xff));
+      } else if (is_engageable) {
+        nvgFillColor(s->vg, nvgRGBA(0xff, 0xff, 0xff, 0xff));
+      }
+      nvgFill(s->vg);
+      img_wheel_alpha = 1.0f;
+    }
+    nvgSave(s->vg);
+    nvgTranslate(s->vg,bg_wheel_x,(bg_wheel_y + (bdr_s*1.5)));
+    nvgRotate(s->vg,-img_rotation);
+    nvgBeginPath(s->vg);
+    NVGpaint imgPaint = nvgImagePattern(s->vg, img_wheel_x-bg_wheel_x, img_wheel_y-(bg_wheel_y + (bdr_s*1.5)), img_wheel_size, img_wheel_size, 0, s->images["wheel"], img_wheel_alpha);
+    nvgRect(s->vg, img_wheel_x-bg_wheel_x, img_wheel_y-(bg_wheel_y + (bdr_s*1.5)), img_wheel_size, img_wheel_size);
+    nvgFillPaint(s->vg, imgPaint);
+    nvgFill(s->vg);
+    nvgRestore(s->vg);
+    }
+
+static void ui_draw_vision_lane_change_ready(UIState *s) {
+  if ((*s->sm)["controlsState"].getControlsState().getEnabled() && (*s->sm)["carState"].getCarState().getVEgo() >= 15.2777777778) {
+    const int radius = 90;
+    const int center_x = s->fb_w - radius - bdr_s * 2;
+    const int center_y = radius  + (bdr_s * 1.5) + 635;
+    //const QColor &color = bg_colors[s->status];
+    //NVGcolor nvg_color = nvgRGBA(color.red(), color.green(), color.blue(), color.alpha());
+    ui_draw_circle_image(s, center_x, center_y, radius, "lane_change_ready", 1.0f);
   }
 }
 
-static void ui_draw_vision_event(UIState *s) {
-  if (s->scene.engageable) {
-    // draw steering wheel
-    const int radius = 96;
-    const int center_x = s->fb_w - radius - bdr_s * 2;
-    const int center_y = radius  + (bdr_s * 1.5);
-    const QColor &color = bg_colors[s->status];
-    NVGcolor nvg_color = nvgRGBA(color.red(), color.green(), color.blue(), color.alpha());
-    ui_draw_circle_image(s, center_x, center_y, radius, "wheel", nvg_color, 1.0f);
+static void ui_draw_gps(UIState *s) {
+  const int radius = 45;
+  const int gps_x = s->fb_w - (radius*5) - 725;
+  const int gps_y = radius + 248;
+  auto gps_state = (*s->sm)["liveLocationKalman"].getLiveLocationKalman();
+  if (gps_state.getGpsOK()) {
+    ui_draw_circle_image(s, gps_x, gps_y, radius, "gps", COLOR_BLACK_ALPHA(50), 1.0f);
+  } else {
+    ui_draw_circle_image(s, gps_x, gps_y, radius, "gps", COLOR_BLACK_ALPHA(50), 0.1f);
   }
 }
 
@@ -974,14 +1137,122 @@ static void ui_draw_vision_face(UIState *s) {
   ui_draw_circle_image(s, center_x, center_y, radius, "driver_face", s->scene.dm_active);
 }
 
+//bsd
+static void ui_draw_vision_car(UIState *s) { //image designd by" Park byeoung kwon"
+  const UIScene *scene = &s->scene;
+  const int car_size = 260;
+  const int car_x_left = (s->fb_w/2 - 460);
+  const int car_x_right = (s->fb_w/2 + 460);
+  const int car_y = 590;
+  const int car_img_size_w = (car_size * 1);
+  const int car_img_size_h = (car_size * 1);
+  const int car_img_x_left = (car_x_left - (car_img_size_w / 2));
+  const int car_img_x_right = (car_x_right - (car_img_size_w / 2));
+  const int car_img_y = (car_y - (car_size / 4));
+
+  int car_valid_status = 0;
+  bool car_valid_left = scene->leftblindspot;
+  bool car_valid_right = scene->rightblindspot;
+  float car_img_alpha;
+    if (s->scene.car_valid_status_changed != car_valid_status) {
+      s->scene.blindspot_blinkingrate = 114;
+      s->scene.car_valid_status_changed = car_valid_status;
+    }
+    if (car_valid_left || car_valid_right) {
+      if (!car_valid_left && car_valid_right) {
+        car_valid_status = 1;
+      } else if (car_valid_left && !car_valid_right) {
+        car_valid_status = 2;
+      } else if (car_valid_left && car_valid_right) {
+        car_valid_status = 3;
+      } else {
+        car_valid_status = 0;
+      }
+//      s->scene.blindspot_blinkingrate -= 6;
+      if(scene->blindspot_blinkingrate<0) s->scene.blindspot_blinkingrate = 120;
+      if (scene->blindspot_blinkingrate>=60) {
+        car_img_alpha = 1.0f;
+      } else {
+        car_img_alpha = 0.0f;
+      }
+    } else {
+      s->scene.blindspot_blinkingrate = 120;
+    }
+
+    if(car_valid_left) {
+      ui_draw_image(s, {car_img_x_left, car_img_y, car_img_size_w, car_img_size_h}, "car_left", car_img_alpha);
+    }
+    if(car_valid_right) {
+      ui_draw_image(s, {car_img_x_right, car_img_y, car_img_size_w, car_img_size_h}, "car_right", car_img_alpha);
+    }
+  }
+//bsd
+//tpms
+static void ui_draw_tpms(UIState *s) {
+  int viz_tpms_w = 140;
+  int viz_tpms_h = 130;
+  int viz_tpms_x = s->fb_w - 185;
+  int viz_tpms_y = 860;
+  
+  char tpmsFl[32];
+  char tpmsFr[32];
+  char tpmsRl[32];
+  char tpmsRr[32];
+ 
+  const Rect rect = {viz_tpms_x, viz_tpms_y, viz_tpms_w, viz_tpms_h};
+  ui_draw_rect(s->vg, rect, COLOR_WHITE_ALPHA(80), 5, 20);
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
+  const int pos_x = viz_tpms_x + (viz_tpms_w / 2);
+  const int pos_y = 966;
+  const int pos_add = 38;
+  const int fontsize = 65;
+
+  ui_draw_text(s, pos_x, pos_y+pos_add, "", fontsize-20, COLOR_WHITE_ALPHA(200), "sans-regular");
+  snprintf(tpmsFl, sizeof(tpmsFl), "%.0f", s->scene.tpmsFl);
+  snprintf(tpmsFr, sizeof(tpmsFr), "%.0f", s->scene.tpmsFr);
+  snprintf(tpmsRl, sizeof(tpmsRl), "%.0f", s->scene.tpmsRl);
+  snprintf(tpmsRr, sizeof(tpmsRr), "%.0f", s->scene.tpmsRr);
+
+  if (s->scene.tpmsFl < 30) {
+    ui_draw_text(s, pos_x - pos_add, pos_y-pos_add, tpmsFl, fontsize, nvgRGBA(102, 255, 51, 255), "sans-bold");
+  } else if (s->scene.tpmsFl > 40) {
+    ui_draw_text(s, pos_x - pos_add, pos_y-pos_add, "-", fontsize, nvgRGBA(255, 66, 66, 255), "sans-semibold");
+  } else {
+    ui_draw_text(s, pos_x - pos_add, pos_y-pos_add, tpmsFl, fontsize, nvgRGBA(255, 255, 255, 255), "sans-semibold");
+  }
+  if (s->scene.tpmsFr < 30) {
+    ui_draw_text(s, pos_x + pos_add, pos_y-pos_add, tpmsFr, fontsize, nvgRGBA(102, 255, 51, 255), "sans-bold");
+  } else if (s->scene.tpmsFr > 40) {
+    ui_draw_text(s, pos_x + pos_add, pos_y-pos_add, "-", fontsize, nvgRGBA(255, 66, 66, 255), "sans-semibold");
+  } else {
+    ui_draw_text(s, pos_x + pos_add, pos_y-pos_add, tpmsFr, fontsize, nvgRGBA(255, 255, 255, 255), "sans-semibold");
+  }
+  if (s->scene.tpmsRl < 30) {
+    ui_draw_text(s, pos_x - pos_add, pos_y, tpmsRl, fontsize, nvgRGBA(102, 255, 51, 255), "sans-bold");
+  } else if (s->scene.tpmsRl > 40) {
+    ui_draw_text(s, pos_x - pos_add, pos_y, "-", fontsize, nvgRGBA(255, 66, 66, 255), "sans-semibold");
+  } else {
+    ui_draw_text(s, pos_x - pos_add, pos_y, tpmsRl, fontsize, nvgRGBA(255, 255, 255, 255), "sans-semibold");
+  }
+  if (s->scene.tpmsRr < 30) {
+    ui_draw_text(s, pos_x + pos_add, pos_y, tpmsRr, fontsize, nvgRGBA(102, 255, 51, 255), "sans-bold");
+  } else if (s->scene.tpmsRr > 40) {
+    ui_draw_text(s, pos_x + pos_add, pos_y, "-", fontsize, nvgRGBA(255, 66, 66, 255), "sans-semibold");
+  } else {
+    ui_draw_text(s, pos_x + pos_add, pos_y, tpmsRr, fontsize, nvgRGBA(255, 255, 255, 255), "sans-semibold");
+  }
+}
+
 static void ui_draw_vision_header(UIState *s) {
   NVGpaint gradient = nvgLinearGradient(s->vg, 0, header_h - (header_h / 2.5), 0, header_h,
                                         nvgRGBAf(0, 0, 0, 0.45), nvgRGBAf(0, 0, 0, 0));
   ui_fill_rect(s->vg, {0, 0, s->fb_w , header_h}, gradient);
   ui_draw_vision_maxspeed(s);
   ui_draw_vision_speed(s);
-  //ui_draw_vision_event(s);
+  ui_draw_vision_event(s);
+  ui_draw_vision_lane_change_ready(s);
   bb_ui_draw_UI(s);
+  //draw_currentgear(s);
   ui_draw_extras(s);
 }
 
@@ -993,8 +1264,12 @@ static void ui_draw_vision(UIState *s) {
   }
   // Set Speed, Current Speed, Status/Events
   ui_draw_vision_header(s);
-  ui_draw_vision_scc_gap(s);
-  ui_draw_vision_brake(s);
+  //bsd
+    ui_draw_vision_car(s);
+    ui_draw_vision_scc_gap(s);
+    ui_draw_tpms(s);
+    ui_draw_gps(s);
+    //ui_draw_vision_brake(s);
     //ui_draw_vision_autohold(s);
 
 #if UI_FEATURE_DASHCAM
@@ -1070,14 +1345,17 @@ void ui_nvg_init(UIState *s) {
   std::vector<std::pair<const char *, const char *>> images = {
     {"wheel", "../assets/img_chffr_wheel.png"},
     {"driver_face", "../assets/img_driver_face.png"},
+    {"car_left", "../assets/img_car_left.png"},
+    {"car_right", "../assets/img_car_right.png"},
+    {"lane_change_ready", "../assets/img_lane_change_ready.png"},
     {"brake", "../assets/img_brake_disc.png"},
     {"autohold_warning", "../assets/img_autohold_warning.png"},
     {"autohold_active", "../assets/img_autohold_active.png"},
     {"img_nda", "../assets/img_nda.png"},
     {"img_hda", "../assets/img_hda.png"},
+    {"gps", "../assets/img_gps.png"},
     {"custom_lead_vision", "../assets/images/custom_lead_vision.png"},
     {"custom_lead_radar", "../assets/images/custom_lead_radar.png"},
-    {"tire_pressure", "../assets/images/img_tire_pressure.png"},
   };
   for (auto [name, file] : images) {
     s->images[name] = nvgCreateImage(s->vg, file, 1);

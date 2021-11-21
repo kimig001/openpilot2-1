@@ -2,7 +2,7 @@
 
 #define UI_FEATURE_BRAKE 1
 #define UI_FEATURE_AUTOHOLD 1
-#define UI_FEATURE_DASHCAM 1
+//#define UI_FEATURE_DASHCAM 1
 
 #define UI_FEATURE_LEFT 1
 #define UI_FEATURE_RIGHT 1
@@ -166,8 +166,33 @@ typedef struct UIScene {
   bool world_objects_visible;
   int lateralControlSelect;
   float output_scale;
+//깜박이 추가
+  bool leftBlinker;
+  bool rightBlinker;
+  int blinker_blinkingrate;
+  bool brakePress;
+  bool brakeLights;
+//깜박이 추가 종료 
+  
+//bsd
+  bool leftblindspot;
+  bool rightblindspot;
+  int blindspot_blinkingrate = 120;
+  int car_valid_status_changed = 0;
+  float currentGear;
+  //bool kr_date_show;
+  //bool kr_time_show;
+  //bool read_params_once = false;
+  cereal::CarState::GearShifter getGearShifter;
 
+//bsd
+ // bool is_rhd;
+ // bool driver_view;
+  float tpmsFl, tpmsFr, tpmsRl, tpmsRr;
   bool is_OpenpilotViewEnabled;
+  bool steerOverride;
+  float angleSteers;
+  float angleSteersDes;
   cereal::PandaState::PandaType pandaType;
 
   // modelV2
@@ -192,6 +217,9 @@ typedef struct UIScene {
   cereal::CarParams::Reader car_params;
   cereal::GpsLocationData::Reader gps_ext;
   cereal::LiveParametersData::Reader live_params;
+  //gps
+  int satelliteCount;
+  float gpsAccuracy;
   cereal::ControlsState::Reader controls_state;
   int satelliteCount;
 
@@ -219,6 +247,7 @@ typedef struct UIState {
 
   //
   bool show_debug_ui, custom_lead_mark;
+  bool show_cgear_ui;
   bool show_basicinfo_ui;
   TouchState touch;
   int lock_on_anim_index;
