@@ -31,7 +31,6 @@ public slots:
 protected:
   void paintEvent(QPaintEvent *event) override;
   void mouseReleaseEvent(QMouseEvent *event) override;
-  void mousePressEvent(QMouseEvent *event) override; //opkr
   void drawMetric(QPainter &p, const QString &label, QColor c, int y);
 
   QImage home_img, settings_img;

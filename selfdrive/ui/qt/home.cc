@@ -1,13 +1,9 @@
 #include "selfdrive/ui/qt/home.h"
 
-#include <QDate>
-#include <QTime>
-#include <QLocale>
+#include <QDateTime>
 #include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QVBoxLayout>
-#include <QProcess> // opkr
-#include <QSoundEffect> // opkr
 
 #include "selfdrive/common/params.h"
 #include "selfdrive/ui/qt/util.h"
@@ -78,15 +74,7 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
   // Handle sidebar collapsing
   if (onroad->isVisible() && (!sidebar->isVisible() || e->x() > sidebar->width())) {
     sidebar->setVisible(!sidebar->isVisible() && !onroad->isMapVisible());
-    QUIState::ui_state.sidebar_view = !QUIState::ui_state.sidebar_view; // opkr
   }
-  
-  QUIState::ui_state.scene.setbtn_count = 0; // opkr
-  QUIState::ui_state.scene.homebtn_count = 0;
-  if (QUIState::ui_state.scene.started && QUIState::ui_state.scene.scr.autoScreenOff != -2) {
-    QUIState::ui_state.scene.touched2 = true;
-    QTimer::singleShot(500, []() { QUIState::ui_state.scene.touched2 = false; });
-  } // opkr
 }
 
 // OffroadHome: the offroad home page
@@ -175,10 +163,7 @@ void OffroadHome::hideEvent(QHideEvent *event) {
 }
 
 void OffroadHome::refresh() {
-  QLocale::setDefault(QLocale::Korean);
-  QString date_kr = QDate::currentDate().toString(Qt::DefaultLocaleLongDate);
-  QString time_kr = QTime::currentTime().toString(Qt::DefaultLocaleShortDate);
-  date->setText(date_kr + " " + time_kr);
+  date->setText(QDateTime::currentDateTime().toString("dddd, MMMM d"));
 
   bool updateAvailable = update_widget->refresh();
   int alerts = alerts_widget->refresh();

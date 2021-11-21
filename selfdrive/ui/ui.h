@@ -180,9 +180,9 @@ typedef struct UIScene {
   int blindspot_blinkingrate = 120;
   int car_valid_status_changed = 0;
   float currentGear;
-  bool kr_date_show;
-  bool kr_time_show;
-  bool read_params_once = false;
+  //bool kr_date_show;
+  //bool kr_time_show;
+  //bool read_params_once = false;
   cereal::CarState::GearShifter getGearShifter;
 
 //bsd
@@ -220,19 +220,9 @@ typedef struct UIScene {
   //gps
   int satelliteCount;
   float gpsAccuracy;
-  // opkr
-  bool touched2 = false;
-  float brightness_off;
-  int setbtn_count = 0;
-  int homebtn_count = 0;
   cereal::ControlsState::Reader controls_state;
-  struct _screen
-  {
-     int  nTime;
-     int  autoScreenOff;
-     int  brightness;
-     int  awake;
-  } scr;
+  //int satelliteCount;
+
 } UIScene;
 
 typedef struct UIState {
@@ -261,8 +251,7 @@ typedef struct UIState {
   bool show_basicinfo_ui;
   TouchState touch;
   int lock_on_anim_index;
-  //opkr
-  bool sidebar_view;
+
 } UIState;
 
 
@@ -308,8 +297,7 @@ private:
   FirstOrderFilter brightness_filter;
 
   QTimer *timer;
-  int sleep_time = -1; // opkr
-  
+
   void updateBrightness(const UIState &s);
   void updateWakefulness(const UIState &s);
 
