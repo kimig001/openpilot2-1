@@ -2,7 +2,7 @@
 
 #define UI_FEATURE_BRAKE 1
 #define UI_FEATURE_AUTOHOLD 1
-//#define UI_FEATURE_DASHCAM 1
+#define UI_FEATURE_DASHCAM 1
 
 #define UI_FEATURE_LEFT 1
 #define UI_FEATURE_RIGHT 1
@@ -187,10 +187,10 @@ typedef struct UIScene {
   cereal::CarState::GearShifter getGearShifter;
 
 //bsd
- // bool is_rhd;
- // bool driver_view;
+  bool is_rhd;
+  bool driver_view;
   float tpmsFl, tpmsFr, tpmsRl, tpmsRr;
-  bool is_OpenpilotViewEnabled;
+  bool is_OpenpilotViewEnabled = false;
   bool steerOverride;
   float angleSteers;
   float angleSteersDes;
