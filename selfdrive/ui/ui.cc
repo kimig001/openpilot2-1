@@ -230,20 +230,20 @@ static void update_state(UIState *s) {
     scene.lateralPlan.rProb = data.getRProb();
     scene.lateralPlan.lanelessModeStatus = data.getLanelessMode();
   }
-  if (Params().getBool("IsOpenpilotViewEnabled")) {
-    scene.started = sm["deviceState"].getDeviceState().getStarted();
-  } else {
-    scene.started = sm["deviceState"].getDeviceState().getStarted() && scene.ignition;
-  }
+  //if (Params().getBool("IsOpenpilotViewEnabled")) {
+  //  scene.started = sm["deviceState"].getDeviceState().getStarted();
+  //} else {
+  //  scene.started = sm["deviceState"].getDeviceState().getStarted() && scene.ignition;
+  //}
 }
 
 void ui_update_params(UIState *s) {
   Params params;
-  s->scene.is_OpenpilotViewEnabled = params.getBool("IsOpenpilotViewEnabled"); 
+  //s->scene.is_OpenpilotViewEnabled = params.getBool("IsOpenpilotViewEnabled"); 
   s->scene.is_metric = Params().getBool("IsMetric");
   s->show_debug_ui = params.getBool("ShowDebugUI");
   s->show_basicinfo_ui = params.getBool("ShowBasicinfoUI");  
-    s->show_cgear_ui = params.getBool("ShowCgearUI");  
+  s->show_cgear_ui = params.getBool("ShowCgearUI");  
   s->custom_lead_mark = params.getBool("CustomLeadMark");
 }
 
