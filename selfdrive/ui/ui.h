@@ -190,7 +190,7 @@ typedef struct UIScene {
   bool is_rhd;
   bool driver_view;
   float tpmsFl, tpmsFr, tpmsRl, tpmsRr;
-  bool is_OpenpilotViewEnabled = false;
+  bool is_OpenpilotViewEnabled;
   bool steerOverride;
   float angleSteers;
   float angleSteersDes;
