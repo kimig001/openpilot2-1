@@ -25,7 +25,7 @@ class CarInterface(CarInterfaceBase):
     v_current_kph = current_speed * CV.MS_TO_KPH
 
     gas_max_bp = [0., 10., 20., 50., 70., 130.]
-    gas_max_v = [2., 1.5, 1.0, 0.7, 0.45, 0.2]
+    gas_max_v = [2.2, 1.8, 1.2, 0.65, 0.43, 0.2]
 
     brake_max_bp = [0, 70., 130.]
     brake_max_v = [CarControllerParams.ACCEL_MIN, -3.2, -2.3]
@@ -151,6 +151,7 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 2200
       ret.wheelbase = 3.15
       ret.centerToFront = ret.wheelbase * 0.4
+      ret.maxSteeringAngleDeg = 120.
     elif candidate == CAR.GENESIS_EQ900_L:
       ret.mass = 2290
       ret.wheelbase = 3.45
