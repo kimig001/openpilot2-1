@@ -816,8 +816,8 @@ static void bb_ui_draw_UI(UIState *s) {
   const int bb_dml_y = (box_y + (bdr_is * 1.5)) + 270 + 20;//UI_FEATURE_LEFT_Y;
 
   const int bb_dmr_w = 180;
-  const int bb_dmr_x = s->fb_w - bb_dmr_w - (bdr_is * 2);
-  const int bb_dmr_y = (box_y + (bdr_is * 1.5)) + 963 - 50;
+  const int bb_dmr_x = s->fb_w - bb_dmr_w - (bdr_is * 2) + 10;
+  const int bb_dmr_y = (box_y + (bdr_is * 1.5)) + 915;
 // 스위치 화면 비우기 시작
 #if UI_FEATURE_LEFT
   if(s->show_debug_ui)
