@@ -1120,7 +1120,7 @@ static void ui_draw_vision_lane_change_ready(UIState *s) {
 
 static void ui_draw_gps(UIState *s) {
   const int radius = 45;
-  const int gps_x = s->fb_w - (radius*5) - 725;
+  const int gps_x = s->fb_w - (radius*5) - 720;
   const int gps_y = radius + 248;
   auto gps_state = (*s->sm)["liveLocationKalman"].getLiveLocationKalman();
   if (gps_state.getGpsOK()) {
