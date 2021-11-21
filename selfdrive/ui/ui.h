@@ -140,6 +140,7 @@ typedef struct UIScene {
   int lateralControlSelect;
   float output_scale;
 
+  bool is_OpenpilotViewEnabled;
   cereal::PandaState::PandaType pandaType;
 
   // modelV2

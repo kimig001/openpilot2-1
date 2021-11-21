@@ -131,3 +131,45 @@ void LateralControlSelect::refresh() {
   btnminus.setText("◀");
   btnplus.setText("▶");
 }
+
+OpenpilotView::OpenpilotView() : AbstractControl("주행화면 미리보기", "주행화면 미리보기 실행", "") {
+
+  // setup widget
+  hlayout->addStretch(1);
+
+  btn.setStyleSheet(R"(
+    padding: 0;
+    border-radius: 50px;
+    font-size: 35px;
+    font-weight: 500;
+    color: #E4E4E4;
+    background-color: #393939;
+  )");
+  btn.setFixedSize(250, 100);
+  hlayout->addWidget(&btn);
+
+  QObject::connect(&btn, &QPushButton::clicked, [=]() {
+    bool stat = params.getBool("IsOpenpilotViewEnabled");
+    if (stat) {
+      params.putBool("IsOpenpilotViewEnabled", false);
+    } else {
+      params.putBool("IsOpenpilotViewEnabled", true);
+    }
+    refresh();
+  });
+  refresh();
+}
+
+void OpenpilotView::refresh() {
+  bool param = params.getBool("IsOpenpilotViewEnabled");
+  if (param) {
+    btn.setText("View Off");
+  } else {
+    btn.setText("View On");
+  }
+  if (car_param.length()) {
+    btn.setEnabled(false);
+  } else {
+    btn.setEnabled(true);
+  }
+}

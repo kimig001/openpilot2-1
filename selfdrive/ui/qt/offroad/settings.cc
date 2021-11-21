@@ -126,23 +126,14 @@ DevicePanel::DevicePanel(QWidget* parent) : ListWidget(parent) {
   QHBoxLayout *reset_layout = new QHBoxLayout();
   reset_layout->setSpacing(30);
 
-  // reset calibration button
-  QPushButton *restart_openpilot_btn = new QPushButton("Soft restart");
-  restart_openpilot_btn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #393939;");
-  reset_layout->addWidget(restart_openpilot_btn);
-  QObject::connect(restart_openpilot_btn, &QPushButton::released, [=]() {
-    emit closeSettings();
-    QTimer::singleShot(1000, []() {
-      Params().putBool("SoftRestartTriggered", true);
-    });
-  });
+  // Openpilot View
+  addItem(new OpenpilotView());
 
   // reset calibration button
-  QPushButton *reset_calib_btn = new QPushButton("Reset Calibration");
-  reset_calib_btn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #393939;");
-  reset_layout->addWidget(reset_calib_btn);
+  QPushButton *reset_calib_btn = new QPushButton("캘리브레이션 및 학습값 초기화");
+  reset_calib_btn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #008299;");
   QObject::connect(reset_calib_btn, &QPushButton::released, [=]() {
-    if (ConfirmationDialog::confirm("Are you sure you want to reset calibration and live params?", this)) {
+    if (ConfirmationDialog::confirm("캘리브레이션 및 학습값을 초기화 할까요?", this)) {
       Params().remove("CalibrationParams");
       Params().remove("LiveParameters");
       emit closeSettings();
@@ -151,20 +142,64 @@ DevicePanel::DevicePanel(QWidget* parent) : ListWidget(parent) {
       });
     }
   });
+  addItem(reset_calib_btn);
+  
+  // power buttons
+  QHBoxLayout *power_layout = new QHBoxLayout();
+  power_layout->setSpacing(30);
 
-  addItem(reset_layout);
+  QPushButton *reboot_btn = new QPushButton("재부팅");
+  reboot_btn->setObjectName("reboot_btn");
+  power_layout->addWidget(reboot_btn);
+  QObject::connect(reboot_btn, &QPushButton::clicked, [=]() {
+    if (ConfirmationDialog::confirm("재부팅하시겠습니까?", this)) {
+      Hardware::reboot();
+    }
+  });
 
-  // offroad-only buttons
+  QPushButton *poweroff_btn = new QPushButton("종료");
+  poweroff_btn->setObjectName("poweroff_btn");
+  power_layout->addWidget(poweroff_btn);
+  QObject::connect(poweroff_btn, &QPushButton::clicked, [=]() {
+    if (ConfirmationDialog::confirm("종료하시겠습니까?", this)) {
+      Hardware::poweroff();
+    }
+  });
 
-  auto dcamBtn = new ButtonControl("Driver Camera", "PREVIEW",
-                                        "Preview the driver facing camera to help optimize device mounting position for best driver monitoring experience. (vehicle must be off)");
-  connect(dcamBtn, &ButtonControl::clicked, [=]() { emit showDriverView(); });
+  setStyleSheet(R"(
+    QPushButton {
+      height: 120px;
+      border-radius: 15px;
+    }
+    #reboot_btn { background-color: #00bfff; }
+    #reboot_btn:pressed { background-color: #0000ff; }
+    #poweroff_btn { background-color: #E22C2C; }
+    #poweroff_btn:pressed { background-color: #FF2424; }
+  )");
+  addItem(power_layout);
 
-  QString resetCalibDesc = "openpilot requires the device to be mounted within 4° left or right and within 5° up or down. openpilot is continuously calibrating, resetting is rarely required.";
-  auto resetCalibBtn = new ButtonControl("Reset Calibration", "RESET", resetCalibDesc);
+  // 소프트 재부팅
+  QPushButton *rebootsoft_Btn = new QPushButton("Soft 재부팅");
+  rebootsoft_Btn->setStyleSheet("height: 120px;border-radius: 15px;background-color: #8c8c8c;");
+  QObject::connect(rebootsoft_Btn, &QPushButton::released, [=]() {
+    if (ConfirmationDialog::confirm("Soft재부팅하시겠습니까?", this)) {
+      emit closeSettings();
+      QTimer::singleShot(1000, []() {
+        Params().putBool("SoftRestartTriggered", true);
+      });
+    }
+  });
+  addItem(rebootsoft_Btn); 
+  
+  QString resetCalibDesc = "오픈파일럿은 좌우로 4° 위아래로 5° 를 보정합니다. 그 이상의 경우 보정이 필요합니다.";
+  auto resetCalibBtn = new ButtonControl("캘리브레이션 초기화", "실행", resetCalibDesc);
   connect(resetCalibBtn, &ButtonControl::clicked, [=]() {
-    if (ConfirmationDialog::confirm("Are you sure you want to reset calibration?", this)) {
+    if (ConfirmationDialog::confirm("캘리브레이션을 초기화하시겠습니까?", this)) {
       Params().remove("CalibrationParams");
+      emit closeSettings();
+      QTimer::singleShot(1000, []() {
+        Params().putBool("SoftRestartTriggered", true);
+      });
     }
   });
   connect(resetCalibBtn, &ButtonControl::showDescription, [=]() {
@@ -178,9 +213,9 @@ DevicePanel::DevicePanel(QWidget* parent) : ListWidget(parent) {
         if (calib.getCalStatus() != 0) {
           double pitch = calib.getRpyCalib()[1] * (180 / M_PI);
           double yaw = calib.getRpyCalib()[2] * (180 / M_PI);
-          desc += QString(" Your device is pointed %1° %2 and %3° %4.")
-                      .arg(QString::number(std::abs(pitch), 'g', 1), pitch > 0 ? "up" : "down",
-                           QString::number(std::abs(yaw), 'g', 1), yaw > 0 ? "right" : "left");
+          desc += QString(" 이온장착상태는 %1° %2 그리고 %3° %4.")
+                                .arg(QString::number(std::abs(pitch), 'g', 1), pitch > 0 ? "위로" : "아래로",
+                                     QString::number(std::abs(yaw), 'g', 1), yaw > 0 ? "우측으로" : "좌측으로");
         }
       } catch (kj::Exception) {
         qInfo() << "invalid CalibrationParams";
@@ -189,11 +224,16 @@ DevicePanel::DevicePanel(QWidget* parent) : ListWidget(parent) {
     resetCalibBtn->setDescription(desc);
   });
 
+  // offroad-only buttons
+  auto dcamBtn = new ButtonControl("운전자 모니터링  미리보기", "실행",
+                                   "운전자 모니터링 카메라를 미리보고 최적의 장착위치를 찾아보세요.");   
+  connect(dcamBtn, &ButtonControl::clicked, [=]() { emit showDriverView(); });
+
   ButtonControl *retrainingBtn = nullptr;
   if (!params.getBool("Passive")) {
-    retrainingBtn = new ButtonControl("Review Training Guide", "REVIEW", "Review the rules, features, and limitations of openpilot");
+    retrainingBtn = new ButtonControl("트레이닝 가이드", "실행", "Review the rules, features, and limitations of openpilot");
     connect(retrainingBtn, &ButtonControl::clicked, [=]() {
-      if (ConfirmationDialog::confirm("Are you sure you want to review the training guide?", this)) {
+      if (ConfirmationDialog::confirm("실행하시겠습니까?", this)) {
         emit reviewTrainingGuide();
       }
     });
@@ -201,67 +241,20 @@ DevicePanel::DevicePanel(QWidget* parent) : ListWidget(parent) {
 
   ButtonControl *regulatoryBtn = nullptr;
   if (Hardware::TICI()) {
-    regulatoryBtn = new ButtonControl("Regulatory", "VIEW", "");
+    regulatoryBtn = new ButtonControl("주의사항", "VIEW", "");
     connect(regulatoryBtn, &ButtonControl::clicked, [=]() {
       const std::string txt = util::read_file("../assets/offroad/fcc.html");
       RichTextDialog::alert(QString::fromStdString(txt), this);
     });
   }
 
-  for (auto btn : {dcamBtn, resetCalibBtn, retrainingBtn, regulatoryBtn}) {
+  for (auto btn : {resetCalibBtn, dcamBtn, retrainingBtn, regulatoryBtn}) {
     if (btn) {
       connect(parent, SIGNAL(offroadTransition(bool)), btn, SLOT(setEnabled(bool)));
       addItem(btn);
     }
   }
 
-  // power buttons
-  QHBoxLayout *power_layout = new QHBoxLayout();
-  power_layout->setSpacing(30);
-
-  QPushButton *reboot_btn = new QPushButton("Reboot");
-  reboot_btn->setObjectName("reboot_btn");
-  power_layout->addWidget(reboot_btn);
-  QObject::connect(reboot_btn, &QPushButton::clicked, [=]() {
-    if (QUIState::ui_state.status == UIStatus::STATUS_DISENGAGED) {
-      if (ConfirmationDialog::confirm("Are you sure you want to reboot?", this)) {
-        // Check engaged again in case it changed while the dialog was open
-        if (QUIState::ui_state.status == UIStatus::STATUS_DISENGAGED) {
-          Params().putBool("DoReboot", true);
-        }
-      }
-    } else {
-      ConfirmationDialog::alert("Disengage to Reboot", this);
-    }
-  });
-
-  QPushButton *poweroff_btn = new QPushButton("Power Off");
-  poweroff_btn->setObjectName("poweroff_btn");
-  power_layout->addWidget(poweroff_btn);
-  QObject::connect(poweroff_btn, &QPushButton::clicked, [=]() {
-    if (QUIState::ui_state.status == UIStatus::STATUS_DISENGAGED) {
-      if (ConfirmationDialog::confirm("Are you sure you want to power off?", this)) {
-        // Check engaged again in case it changed while the dialog was open
-        if (QUIState::ui_state.status == UIStatus::STATUS_DISENGAGED) {
-          Params().putBool("DoShutdown", true);
-        }
-      }
-    } else {
-      ConfirmationDialog::alert("Disengage to Power Off", this);
-    }
-  });
-
-  setStyleSheet(R"(
-    QPushButton {
-      height: 120px;
-      border-radius: 15px;
-    }
-    #reboot_btn { background-color: #393939; }
-    #reboot_btn:pressed { background-color: #4a4a4a; }
-    #poweroff_btn { background-color: #E22C2C; }
-    #poweroff_btn:pressed { background-color: #FF2424; }
-  )");
-  addItem(power_layout);
 }
 
 SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
@@ -282,9 +275,9 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   });
 
 
-  auto uninstallBtn = new ButtonControl("Uninstall " + getBrand(), "UNINSTALL");
+  auto uninstallBtn = new ButtonControl("오픈파일럿 삭제 " + getBrand(), "삭제");
   connect(uninstallBtn, &ButtonControl::clicked, [=]() {
-    if (ConfirmationDialog::confirm("Are you sure you want to uninstall?", this)) {
+    if (ConfirmationDialog::confirm("오픈파일럿을 삭제하시겠습니까?", this)) {
       Params().putBool("DoUninstall", true);
     }
   });
@@ -336,11 +329,11 @@ QWidget * network_panel(QWidget * parent) {
   ListWidget *list = new ListWidget();
   list->setSpacing(30);
   // wifi + tethering buttons
-  auto wifiBtn = new ButtonControl("Wi-Fi Settings", "OPEN");
+  auto wifiBtn = new ButtonControl("\U0001f4f6 WiFi 설정", "열기");
   QObject::connect(wifiBtn, &ButtonControl::clicked, [=]() { HardwareEon::launch_wifi(); });
   list->addItem(wifiBtn);
 
-  auto tetheringBtn = new ButtonControl("Tethering Settings", "OPEN");
+  auto tetheringBtn = new ButtonControl("\U0001f4f6 테더링 설정", "열기");
   QObject::connect(tetheringBtn, &ButtonControl::clicked, [=]() { HardwareEon::launch_tethering(); });
   list->addItem(tetheringBtn);
 
@@ -401,7 +394,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
   )");
 
   // close button
-  QPushButton* close_btn = new QPushButton("← Back");
+  QPushButton* close_btn = new QPushButton("← 닫기");
   close_btn->setStyleSheet(R"(
     QPushButton {
       font-size: 50px;
@@ -411,7 +404,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
       border-width: 0;
       border-radius: 30px;
       color: #dddddd;
-      background-color: #444444;
+      background-color: #0100ff;
     }
   )");
   close_btn->setFixedSize(300, 110);
@@ -568,19 +561,19 @@ CommunityPanel::CommunityPanel(QWidget* parent) : QWidget(parent) {
   QList<ParamControl*> toggles;
 
   toggles.append(new ParamControl("UseClusterSpeed",
-                                            "Use Cluster Speed",
+                                            "계기판 속도 사용",
                                             "Use cluster speed instead of wheel speed.",
                                             "../assets/offroad/icon_road.png",
                                             this));
 
   toggles.append(new ParamControl("LongControlEnabled",
-                                            "Enable HKG Long Control",
+                                            "HKG 롱컨트롤 사용",
                                             "warnings: it is beta, be careful!! Openpilot will control the speed of your car",
                                             "../assets/offroad/icon_road.png",
                                             this));
 
   toggles.append(new ParamControl("MadModeEnabled",
-                                            "Enable HKG MAD mode",
+                                            "HKG MAD 모드 ",
                                             "Openpilot will engage when turn cruise control on",
                                             "../assets/offroad/icon_openpilot.png",
                                             this));
