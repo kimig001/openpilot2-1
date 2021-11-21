@@ -83,8 +83,6 @@
 const int bdr_s = 20;
 const int header_h = 420;
 const int footer_h = 280;
-const int laneless_btn = {1585, 905, 140, 140};
-
 const int UI_FREQ = 20;   // Hz
 typedef cereal::CarControl::HUDControl::AudibleAlert AudibleAlert;
 
@@ -103,6 +101,7 @@ typedef struct Rect {
     return px >= x && px < (x + w) && py >= y && py < (y + h);
   }
 } Rect;
+const Rect laneless_btn = {1585, 905, 140, 140};
 
 struct Alert {
   QString text1;
