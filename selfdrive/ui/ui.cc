@@ -246,7 +246,7 @@ void ui_update_params(UIState *s) {
     scene.is_metric = params.getBool("IsMetric");
     s->show_debug_ui = params.getBool("ShowDebugUI");
     s->show_basicinfo_ui = params.getBool("ShowBasicinfoUI");  
-    s->cgear_ui = params.getBool("ShowCgearUI");  
+    s->show_cgear_ui = params.getBool("ShowCgearUI");  
     s->custom_lead_mark = params.getBool("CustomLeadMark");
   }
 }
