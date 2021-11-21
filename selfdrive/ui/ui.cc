@@ -244,10 +244,11 @@ void ui_update_params(UIState *s) {
   if (frame % (5*UI_FREQ) == 0) {
     scene.is_OpenpilotViewEnabled = params.getBool("IsOpenpilotViewEnabled"); 
     scene.is_metric = params.getBool("IsMetric");
-    scene.is_show_debug_ui = params.getBool("ShowDebugUI");
-    scene.is_show_basicinfo_ui = params.getBool("ShowBasicinfoUI");  
-    scene.is_cgear_ui = params.getBool("ShowCgearUI");  
-    scene.is_custom_lead_mark = params.getBool("CustomLeadMark");
+    s->show_debug_ui = params.getBool("ShowDebugUI");
+    s->show_basicinfo_ui = params.getBool("ShowBasicinfoUI");  
+    s->cgear_ui = params.getBool("ShowCgearUI");  
+    s->custom_lead_mark = params.getBool("CustomLeadMark");
+  }
 }
 
 static void update_status(UIState *s) {
