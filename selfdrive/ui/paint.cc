@@ -693,12 +693,12 @@ static void bb_ui_draw_basic_info(UIState *s) {
                         sccLogMessage.c_str()
                         );
 
-    int x = bdr_s * 2;
+    int x = (bdr_s * 2) + 135;
     int y = s->fb_h - 24;
 
     nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
 
-    ui_draw_text(s, x, y, str, 20 * 2.5, COLOR_WHITE_ALPHA(200), "sans-semibold");
+    ui_draw_text(s, x, y, str, 21 * 2.5, COLOR_WHITE_ALPHA(180), "sans-semibold");
 }
 
 static void bb_ui_draw_debug(UIState *s) {
@@ -951,7 +951,7 @@ static void ui_draw_vision_speed(UIState *s) {
   else {
     //ui_draw_text(s, s->fb_w/2, 180, speed_str.c_str(), 60 * 2.5, COLOR_WHITE, "sans-bold");
     textSpeed.update(s, s->fb_w/2, 180, speed_str.c_str(), 60 * 2.5, COLOR_WHITE);
-    //ui_draw_text(s, s->fb_w/2, 230, s->scene.is_metric ? "km/h" : "mph", 25 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
+    ui_draw_text(s, s->fb_w/2, 230, s->scene.is_metric ? "km/h" : "mph", 25 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
   }
 }
 
@@ -995,7 +995,7 @@ static void ui_draw_vision(UIState *s) {
   ui_draw_vision_header(s);
   ui_draw_vision_scc_gap(s);
   ui_draw_vision_brake(s);
-  ui_draw_vision_autohold(s);
+    //ui_draw_vision_autohold(s);
 
 #if UI_FEATURE_DASHCAM
    if(s->awake && Hardware::EON())

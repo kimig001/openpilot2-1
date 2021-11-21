@@ -228,6 +228,7 @@ void ui_update_params(UIState *s) {
   s->scene.is_OpenpilotViewEnabled = params.getBool("IsOpenpilotViewEnabled"); 
   s->scene.is_metric = Params().getBool("IsMetric");
   s->show_debug_ui = params.getBool("ShowDebugUI");
+  s->show_basicinfo_ui = params.getBool("ShowBasicinfoUI");  
   s->custom_lead_mark = params.getBool("CustomLeadMark");
 }
 
