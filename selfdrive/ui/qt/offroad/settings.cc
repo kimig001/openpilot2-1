@@ -25,6 +25,9 @@
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/qt/qt_window.h"
 
+#include <QProcess> // opkr
+#include <QDateTime> // opkr
+#include <QTimer> // opkr
 #include <QComboBox>
 #include <QAbstractItemView>
 #include <QScroller>
@@ -353,6 +356,10 @@ VIPPanel::VIPPanel(QWidget* parent) : QWidget(parent) {
   QVBoxLayout *layout = new QVBoxLayout(this);
   
   layout->addWidget(new LabelControl("UI설정", ""));
+  layout->addWidget(new KRDateToggle());
+  layout->addWidget(new KRTimeToggle());
+  layout->addWidget(new BrightnessControl());
+  layout->addWidget(new AutoScreenOff());
   layout->addWidget(new ParamControl("ShowCgearUI",
                                             "주행기어단수 보기",
                                             "기어레버 위치와 기어단수를 볼수 있습니다..",
@@ -583,6 +590,12 @@ CommunityPanel::CommunityPanel(QWidget* parent) : QWidget(parent) {
   )");
 
   QList<ParamControl*> toggles;
+  
+  toggles.append(new ParamControl("PutPrebuilt", 
+                                           "Smart Prebuilt 실행 ",
+                                           "Prebuilt 파일을 생성하며 부팅속도를 향상시킵니다.",
+                                            "../assets/offroad/icon_shell.png",
+                                            this));
 
   toggles.append(new ParamControl("UseClusterSpeed",
                                             "계기판 속도 사용",

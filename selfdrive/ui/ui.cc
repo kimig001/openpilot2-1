@@ -229,9 +229,15 @@ void ui_update_params(UIState *s) {
   s->scene.is_metric = Params().getBool("IsMetric");
   s->show_debug_ui = params.getBool("ShowDebugUI");
   s->show_basicinfo_ui = params.getBool("ShowBasicinfoUI");  
+  s->show_cgear_ui = params.getBool("ShowCgearUI");  
   s->custom_lead_mark = params.getBool("CustomLeadMark");
 }
-
+  if (!scene.read_params_once) {
+    scene.kr_date_show = params.getBool("KRDateShow");
+    scene.kr_time_show = params.getBool("KRTimeShow");  
+    scene.read_params_once = true;  
+  }
+}
 static void update_status(UIState *s) {
   if (s->scene.started && s->sm->updated("controlsState")) {
     auto controls_state = (*s->sm)["controlsState"].getControlsState();
@@ -254,6 +260,17 @@ static void update_status(UIState *s) {
       s->scene.end_to_end = Params().getBool("EndToEndToggle");
       s->wide_camera = Hardware::TICI() ? Params().getBool("EnableWideCamera") : false;
     }
+      //opkr
+      s->scene.scr.autoScreenOff = std::stoi(Params().get("AutoScreenOff")); //opkr
+      if (s->scene.scr.autoScreenOff > 0) {
+        s->scene.scr.nTime = s->scene.scr.autoScreenOff * 60 * UI_FREQ;
+      } else if (s->scene.scr.autoScreenOff == 0) {
+        s->scene.scr.nTime = 30 * UI_FREQ;
+      } else if (s->scene.scr.autoScreenOff == -1) {
+        s->scene.scr.nTime = 15 * UI_FREQ;
+      } else {
+        s->scene.scr.nTime = -1;
+      } //opkr
     // Invisible until we receive a calibration message.
     s->scene.world_objects_visible = false;
   }
@@ -391,6 +408,18 @@ void Device::updateBrightness(const UIState &s) {
 
     // Scale back to 10% to 100%
     clipped_brightness = std::clamp(100.0f * clipped_brightness, 10.0f, 100.0f);
+    if (!s.scene.started) {
+      clipped_brightness = BACKLIGHT_OFFROAD;
+    } else if (s.scene.scr.autoScreenOff != -2 && s.scene.touched2) { //opkr
+      sleep_time = s.scene.scr.nTime;
+    } else if (s.scene.controls_state.getAlertSize() != cereal::ControlsState::AlertSize::NONE && s.scene.scr.autoScreenOff != -2) {
+      sleep_time = s.scene.scr.nTime;
+    } else if (sleep_time > 0 && s.scene.scr.autoScreenOff != -2) {
+      sleep_time--;
+    } else if (s.scene.started && sleep_time == -1 && s.scene.scr.autoScreenOff != -2) {
+      sleep_time = s.scene.scr.nTime; //opkr
+    }
+	
 
     // Limit brightness if running for too long
     if (Hardware::TICI()) {
@@ -406,6 +435,10 @@ void Device::updateBrightness(const UIState &s) {
   int brightness = brightness_filter.update(clipped_brightness);
   if (!awake) {
     brightness = 0;
+  } else if (s.scene.started && sleep_time == 0 && s.scene.scr.autoScreenOff != -2) { //opkr
+    brightness = s.scene.brightness_off * 0.01 * brightness;
+  } else if( s.scene.scr.brightness ) {
+    brightness = s.scene.scr.brightness * 0.99; //opkr
   }
 
   if (brightness != last_brightness) {

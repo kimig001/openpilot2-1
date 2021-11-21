@@ -1,5 +1,35 @@
 #!/usr/bin/bash
 
+if [ ! -f "/data/openpilot/installer/boot_finish" ]; then
+  echo "Installing fonts..."
+  mount -o rw,remount /system
+  cp -f /data/openpilot/installer/fonts/NanumGothic* /system/fonts/
+  #cp -f /data/openpilot/installer/fonts/opensans_* /data/openpilot/selfdrive/assets/fonts/
+  cp -f /data/openpilot/installer/fonts/fonts.xml /system/etc/fonts.xml
+  chmod 644 /system/etc/fonts.xml
+  chmod 644 /system/fonts/NanumGothic*
+  #cp -f /data/openpilot/installer/bootanimation.zip /system/media/
+  cp -f /data/openpilot/installer/spinner /data/openpilot/selfdrive/ui/qt/
+
+  #chmod 744 /system/media/bootanimation.zip
+  chmod 700 /data/openpilot/selfdrive/ui/qt/spinner
+  touch /data/openpilot/installer/boot_finish
+
+
+elif [ "$(getprop persist.sys.locale)" != "ko-KR" ]; then
+
+  setprop persist.sys.locale ko-KR
+  setprop persist.sys.language ko
+  setprop persist.sys.country KR
+  setprop persist.sys.timezone Asia/Seoul
+
+  sleep 2
+  reboot
+else
+  chmod 644 /data/openpilot/installer/boot_finish
+  mount -o ro,remount /system
+fi
+
 if [ -z "$BASEDIR" ]; then
   BASEDIR="/data/openpilot"
 fi
@@ -183,6 +213,11 @@ function launch {
 
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
+  
+  # spinner, by opkr
+  if [ -f "$BASEDIR/prebuilt" ]; then
+    python /data/openpilot/common/spinner.py &
+  fi
 
   python ./selfdrive/car/hyundai/values.py > /data/params/d/SupportedCars
 
