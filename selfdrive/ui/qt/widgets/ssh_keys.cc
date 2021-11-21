@@ -167,9 +167,4 @@ void OpenpilotView::refresh() {
   } else {
     btn.setText("View On");
   }
-  if (car_param.length()) {
-    btn.setEnabled(false);
-  } else {
-    btn.setEnabled(true);
-  }
 }
