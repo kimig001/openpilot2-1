@@ -649,19 +649,19 @@ CommunityPanel::CommunityPanel(QWidget* parent) : QWidget(parent) {
                                             "",
                                             "../assets/offroad/icon_shell.png",
                                             this));
-
-  toggles.append(new ParamControl("ShowDebugUI",
-                                            "Show Debug UI",
-                                            "",
-                                            "../assets/offroad/icon_shell.png",
-                                            this));
-
+  
   toggles.append(new ParamControl("CustomLeadMark",
                                             "Use custom lead mark",
                                             "",
                                             "../assets/offroad/icon_road.png",
                                             this));
-
+  
+  toggles.append(new ParamControl("C3MdpsSet",
+                                            "C3 MDPS 버스1 고정",
+                                            "콤마3 MDPS 개조 버스1로 고정",
+                                            "../assets/offroad/icon_road.png",
+                                            this));
+  
   for(ParamControl *toggle : toggles) {
     if(main_layout->count() != 0) {
       toggleLayout->addWidget(horizontal_line());

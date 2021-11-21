@@ -54,6 +54,8 @@ def manager_init():
     ("StockNaviDecelEnabled", "0"),
     ("ShowDebugUI", "0"),
     ("ShowBasicinfoUI", "1"),
+    ("C3MdpsSet", "0"),
+	
     ("DisableOpFcw", "0"),
     ("CustomLeadMark", "0"),
     ("IsOpenpilotViewEnabled", "0"),
