@@ -376,6 +376,11 @@ VIPPanel::VIPPanel(QWidget* parent) : QWidget(parent) {
                                             "NDA 카메라 경고를 계기판과 HUD에 끄거나 켭니다.",
                                             "../assets/offroad/icon_shell.png"
                                             ));
+  layout->addWidget(new ParamControl("C3MdpsSet",
+                                            "C3 MDPS 버스1 고정",
+                                            "콤마3 MDPS 개조 버스1로 고정",
+                                            "../assets/offroad/icon_road.png",
+                                            this));
   
   layout->addWidget(horizontal_line());
 }
@@ -653,12 +658,6 @@ CommunityPanel::CommunityPanel(QWidget* parent) : QWidget(parent) {
   toggles.append(new ParamControl("CustomLeadMark",
                                             "Use custom lead mark",
                                             "",
-                                            "../assets/offroad/icon_road.png",
-                                            this));
-  
-  toggles.append(new ParamControl("C3MdpsSet",
-                                            "C3 MDPS 버스1 고정",
-                                            "콤마3 MDPS 개조 버스1로 고정",
                                             "../assets/offroad/icon_road.png",
                                             this));
   
