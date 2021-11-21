@@ -80,6 +80,9 @@
 #define COLOR_SKYBLUE nvgRGBA(135, 206, 235, 255)
 #define COLOR_SKYBLUE_ALPHA(x) nvgRGBA(0, 255, 255, x)
 
+const int bdr_s = 20;
+const int header_h = 420;
+const int footer_h = 280;
 const int UI_FREQ = 20;   // Hz
 typedef cereal::CarControl::HUDControl::AudibleAlert AudibleAlert;
 
