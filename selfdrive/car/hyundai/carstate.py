@@ -50,6 +50,7 @@ class CarState(CarStateBase):
 
     self.use_cluster_speed = Params().get_bool('UseClusterSpeed')
     self.long_control_enabled = Params().get_bool('LongControlEnabled')
+    self.gear_Shifter = GearShifter.unknown  # 기어레버 특수한 환경용
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
@@ -105,7 +106,7 @@ class CarState(CarStateBase):
     else:
       self.mdps_error_cnt = 0
 
-    ret.steerWarning = self.mdps_error_cnt > 50
+    ret.steerWarning = self.mdps_error_cnt > 500 # 100
 
     if self.CP.enableAutoHold:
       ret.autoHold = cp.vl["ESP11"]["AVH_STAT"]
@@ -130,7 +131,7 @@ class CarState(CarStateBase):
     # TODO: Find brake pressure
     ret.brake = 0
     ret.brakePressed = cp.vl["TCS13"]["DriverBraking"] != 0
-    ret.brakeHoldActive = cp.vl["TCS15"]["AVH_LAMP"] == 2  # 0 OFF, 1 ERROR, 2 ACTIVE, 3 READY
+    #ret.brakeHoldActive = cp.vl["TCS15"]["AVH_LAMP"] == 2  # 0 OFF, 1 ERROR, 2 ACTIVE, 3 READY 테스트
 
     # TODO: Check this
     ret.brakeLights = bool(cp.vl["TCS13"]["BrakeLight"] or ret.brakePressed)
@@ -147,12 +148,13 @@ class CarState(CarStateBase):
       ret.gas = cp.vl["EMS12"]["PV_AV_CAN"] / 100.
       ret.gasPressed = bool(cp.vl["EMS16"]["CF_Ems_AclAct"])
 
-    if not self.car_fingerprint in FEATURES["use_elect_gears"]:
-    #if self.car_fingerprint in [CAR.GENESIS, CAR.GENESIS_EQ900, CAR.GENESIS_EQ900_L, CAR.K7]: 
-      ret.currentGear = cp.vl["LVR11"]["CF_Lvr_CGear"]
+    NOT_GEAR = [CAR.KONA_EV, CAR.NIRO_EV, CAR.IONIQ_EV_2020]
+# 테네시 현재기어단수 적용
+    if not self.car_fingerprint in NOT_GEAR : # 현재 기어 단수를 표시하기 위한 작업
+      ret.currentGear = cp.vl["LVR11"]["CF_Lvr_GearInf"] # 핑거 870 내용교체함 CF_Lvr_CGear
+      if self.car_fingerprint in [CAR.GENESIS_G70] :
+        ret.currentGear = cp.vl["LVR11"]["G70_Gear"]
 
-    gear_disp2 = cp.vl["LVR11"] #["CF_Lvr_CGear"] 
-    print(gear_disp2)
  
 	  
       
@@ -177,18 +179,26 @@ class CarState(CarStateBase):
     # Gear Selection via Cluster - For those Kia/Hyundai which are not fully discovered, we can use the Cluster Indicator for Gear Selection,
     # as this seems to be standard over all cars, but is not the preferred method.
     if self.CP.carFingerprint in FEATURES["use_cluster_gears"]:
+      #disp = cp.vl["CLU15"] # 0x52A 계기판 정보에서 기어 레버정보가 나올때
+      #print(gear_disp)
       gear = cp.vl["CLU15"]["CF_Clu_Gear"]
     elif self.CP.carFingerprint in FEATURES["use_tcu_gears"]:
+      #gear_disp = cp.vl["TCU12"]
+      #print(gear_disp)
       gear = cp.vl["TCU12"]["CUR_GR"]
     elif self.CP.carFingerprint in FEATURES["use_elect_gears"]:
+      #gear_disp = cp.vl["ELECT_GEAR"]
+      #print(gear_disp)
       gear = cp.vl["ELECT_GEAR"]["Elect_Gear_Shifter"]
     else:
+      #gear_disp = cp.vl["LVR12"] # 0x367 871계기판과 TCU 정보교환데이터가 있을때
+      #print(gear_disp)
       gear = cp.vl["LVR12"]["CF_Lvr_Gear"]
 
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(gear))
 
     if self.CP.carFingerprint in FEATURES["use_fca"]:
-      ret.stockAeb = cp.vl["FCA11"]["FCA_CmdAct"] != 0
+      ret.stockAeb = cp.vl["FCA11"]["FCA_CmdAct"] != 0 # 0xFCA
       ret.stockFcw = cp.vl["FCA11"]["CF_VSM_Warn"] == 2
     else:
       ret.stockAeb = cp.vl["SCC12"]["AEB_CmdAct"] != 0
@@ -287,19 +297,11 @@ class CarState(CarStateBase):
 
       ("ESC_Off_Step", "TCS15", 0),
       ("AVH_LAMP", "TCS15", 0),
-	    
-      ("Lvr12_00", "LVR12", 0),     
-      ("Lvr12_01", "LVR12", 0),     
-      ("Lvr12_02", "LVR12", 0),     
-      ("Lvr12_03", "LVR12", 0),     
-      ("Lvr12_04", "LVR12", 0),     
-      ("Lvr12_05", "LVR12", 0),     
-      ("Lvr12_06", "LVR12", 0),     
-      ("Lvr12_07", "LVR12", 0),     
 
-      ("CF_Lvr_CGear", "LVR11", 0), 
-      ("CF_Lvr_GearInf", "LVR11", 0),  
+      ("AVH_STAT", "ESP11", 0),
 
+      ("CF_Lvr_GearInf", "LVR11", 0),
+      ("G70_Gear", "LVR11", 0), 
 
       ("MainMode_ACC", "SCC11", 1),
       ("SCCInfoDisplay", "SCC11", 0),
