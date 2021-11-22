@@ -817,26 +817,23 @@ static void bb_ui_draw_cgear(UIState *s)
 {  
   const UIScene *scene = &s->scene; 
 
-    int x = (bdr_s * 2);
-    int y = s->fb_h;
-    int x_gear = x+210;
-    int y_gear = y-157;
-
-    char strGear[32];
-    int  ngetGearShifter = int(s->scene.getGearShifter);
-    snprintf(strGear, sizeof(strGear), "%.0f", s->scene.currentGear);
-    // 주행시에 현재기어 단수가 나오게 하는데 조건은 D드라이브 모드이어야 하고 만약아니라면 그건 PRN이므로 기어쉬프트레버종류에 따라서 아래 수치도 변경을 요함
-    if ((s->scene.currentGear < 9) && (s->scene.currentGear !=0)) { // 드라이브 모드일때 5번 8번은 노말드라이브 수동기어모드 드라이브이다..
-      ui_draw_text(s, x_gear, y_gear, strGear, 25 * 10., COLOR_RED, "sans-semibold");
-    } else if (s->scene.currentGear == 14 ) { // 기어 정보를 계기판등에서 얻는다면 14가 아니고  LVR12또는 ELECT_GEAR데이터 carstate.py 데이터인 7이 된다..
-      ui_draw_text(s, x_gear, y_gear, "R", 25 * 10., COLOR_RED, "sans-semibold");
-    } else if (ngetGearShifter == 1 ) { // 기어 정보를 계기판등에서 얻는다면 3가 아니고  LVR12또는 ELECT_GEAR데이터 carstate.py 데이터인 0이 된다..
-      ui_draw_text(s, x_gear, y_gear, "P", 25 * 10., COLOR_WHITE, "sans-semibold");
-    } else if (ngetGearShifter == 3 ) {  // 기어 정보를 계기판등에서 얻는다면 3가 아니고  LVR12또는 ELECT_GEAR데이터 carstate.py 데이터인 6이 된다..
-      ui_draw_text(s, x_gear, y_gear, "N", 25 * 10., COLOR_ORANGE, "sans-semibold");
-    }
-    // 1 "P"   2 "D"  3 "N" 4 "R"
-
+  int x = (bdr_s * 2);
+  int y = s->fb_h;
+  int x_gear = x+210-210+30;
+  int y_gear = y-157+28;
+	
+  char strGear[32];
+  int  ngetGearShifter = int(s->scene.getGearShifter);
+  snprintf(strGear, sizeof(strGear), "%.0f", s->scene.currentGear);
+  if ((s->scene.currentGear < 9) && (s->scene.currentGear !=0)) { 
+    ui_draw_text(s, x_gear, y_gear, strGear, 25 * 8., COLOR_WHITE, "sans-semibold");
+  } else if (s->scene.currentGear == 14 ) { 
+    ui_draw_text(s, x_gear, y_gear, "R", 25 * 8., COLOR_RED, "sans-semibold");
+  } else if (ngetGearShifter == 1 ) { 
+    ui_draw_text(s, x_gear, y_gear, "P", 25 * 8., COLOR_WHITE, "sans-semibold");
+  } else if (ngetGearShifter == 3 ) {  
+    ui_draw_text(s, x_gear, y_gear, "N", 25 * 8., COLOR_WHITE, "sans-semibold");
+  }
 }
 
 static void bb_ui_draw_UI(UIState *s) {
@@ -845,8 +842,8 @@ static void bb_ui_draw_UI(UIState *s) {
   const int bb_dml_y = (box_y + (bdr_is * 1.5)) + 270 + 20;//UI_FEATURE_LEFT_Y;
 
   const int bb_dmr_w = 180;
-  const int bb_dmr_x = s->fb_w - bb_dmr_w - (bdr_is * 2) + 10;
-  const int bb_dmr_y = (box_y + (bdr_is * 1.5)) + 915;
+  const int bb_dmr_x = s->fb_w - bb_dmr_w - (bdr_is * 2);
+  const int bb_dmr_y = (box_y + (bdr_is * 1.5)) + 963;
 // 스위치 화면 비우기 시작
 #if UI_FEATURE_LEFT
   if(s->show_debug_ui)
@@ -970,21 +967,21 @@ static void ui_draw_vision_maxspeed(UIState *s) {
     else
         snprintf(str, sizeof(str), "%d", (int)(applyMaxSpeed*KM_TO_MILE + 0.5));
 
-    ui_draw_text(s, text_x, 100, str, 33 * 2.5, COLOR_WHITE, "sans-semibold");
+    ui_draw_text(s, text_x, 98, str, 33 * 2.5, COLOR_WHITE, "sans-semibold");
 
     if (s->scene.is_metric)
         snprintf(str, sizeof(str), "%d", (int)(cruiseMaxSpeed + 0.5));
     else
         snprintf(str, sizeof(str), "%d", (int)(cruiseMaxSpeed*KM_TO_MILE + 0.5));
 
-    ui_draw_text(s, text_x, 195, str, 48 * 2.5, COLOR_WHITE, "sans-bold");
+    ui_draw_text(s, text_x, 192, str, 48 * 2.5, COLOR_WHITE, "sans-bold");
   } else {
     if(longControl)
-        ui_draw_text(s, text_x, 100, "OP", 25 * 2.5, COLOR_WHITE_ALPHA(100), "sans-semibold");
+        ui_draw_text(s, text_x, 98, "OP", 25 * 2.5, COLOR_WHITE_ALPHA(100), "sans-semibold");
     else
-        ui_draw_text(s, text_x, 100, "MAX", 25 * 2.5, COLOR_WHITE_ALPHA(100), "sans-semibold");
+        ui_draw_text(s, text_x, 98, "MAX", 25 * 2.5, COLOR_WHITE_ALPHA(100), "sans-semibold");
 
-    ui_draw_text(s, text_x, 195, "N/A", 42 * 2.5, COLOR_WHITE_ALPHA(100), "sans-semibold");
+    ui_draw_text(s, text_x, 192, "N/A", 42 * 2.5, COLOR_WHITE_ALPHA(100), "sans-semibold");
   }
 }
 
@@ -1149,7 +1146,7 @@ static void ui_draw_vision_lane_change_ready(UIState *s) {
 
 static void ui_draw_gps(UIState *s) {
   const int radius = 45;
-  const int gps_x = s->fb_w - (radius*5) - 720;
+  const int gps_x = s->fb_w - (radius*5) - 725;
   const int gps_y = radius + 248;
   auto gps_state = (*s->sm)["liveLocationKalman"].getLiveLocationKalman();
   if (gps_state.getGpsOK()) {

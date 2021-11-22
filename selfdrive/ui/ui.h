@@ -8,7 +8,7 @@
 #define UI_FEATURE_RIGHT 1
 
 #define UI_FEATURE_LEFT_Y 220
-#define UI_FEATURE_RIGHT_Y 10
+#define UI_FEATURE_RIGHT_Y 20
 
 #define UI_FEATURE_LEFT_REL_DIST 1
 #define UI_FEATURE_LEFT_REL_SPEED 1
@@ -80,7 +80,7 @@
 #define COLOR_SKYBLUE nvgRGBA(135, 206, 235, 255)
 #define COLOR_SKYBLUE_ALPHA(x) nvgRGBA(0, 255, 255, x)
 
-const int bdr_s = 20;
+const int bdr_s = 10;
 const int header_h = 420;
 const int footer_h = 280;
 const int UI_FREQ = 20;   // Hz
