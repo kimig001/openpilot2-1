@@ -131,7 +131,7 @@ class CarState(CarStateBase):
     # TODO: Find brake pressure
     ret.brake = 0
     ret.brakePressed = cp.vl["TCS13"]["DriverBraking"] != 0
-    #ret.brakeHoldActive = cp.vl["TCS15"]["AVH_LAMP"] == 2  # 0 OFF, 1 ERROR, 2 ACTIVE, 3 READY 테스트
+    ret.brakeHoldActive = cp.vl["TCS15"]["AVH_LAMP"] == 2  # 0 OFF, 1 ERROR, 2 ACTIVE, 3 READY 테스트
 
     # TODO: Check this
     ret.brakeLights = bool(cp.vl["TCS13"]["BrakeLight"] or ret.brakePressed)
@@ -149,7 +149,7 @@ class CarState(CarStateBase):
       ret.gasPressed = bool(cp.vl["EMS16"]["CF_Ems_AclAct"])
 
     NOT_GEAR = [CAR.KONA_EV, CAR.NIRO_EV, CAR.IONIQ_EV_2020]
-# 테네시 현재기어단수 적용
+
     if not self.car_fingerprint in NOT_GEAR : # 현재 기어 단수를 표시하기 위한 작업
       ret.currentGear = cp.vl["LVR11"]["CF_Lvr_GearInf"] # 핑거 870 내용교체함 CF_Lvr_CGear
       if self.car_fingerprint in [CAR.GENESIS_G70] :
