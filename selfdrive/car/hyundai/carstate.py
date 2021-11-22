@@ -286,7 +286,8 @@ class CarState(CarStateBase):
       ("CF_VSM_Avail", "TCS13", 0),
 
       ("ESC_Off_Step", "TCS15", 0),
-	  ("AVH_LAMP", "TCS15", 0),
+      ("AVH_LAMP", "TCS15", 0),
+	    
       ("Lvr12_00", "LVR12", 0),     
       ("Lvr12_01", "LVR12", 0),     
       ("Lvr12_02", "LVR12", 0),     
